@@ -12,7 +12,8 @@ anywhere on the board that meets the following conditions:
 to the square in which the disk is placed
 2. on the other side of the opponent's disk,
 there may be more disks of the opponent's as well,
-but they must end in another disk of the player who is making the move.  
+but they must end in another disk of the player who is making the move
+
 That player then flips all of the opponent's disks
 from the point where the move was made until the next disk of the player's color.
 The flipping is oden in all eight directions
