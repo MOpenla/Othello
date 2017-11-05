@@ -12,6 +12,7 @@
 //White = -1
 //Player is Black
 //Computer is White
+//Black goes first
 
 #include <iostream>
 #include <string>
@@ -20,15 +21,14 @@ using namespace std;
 
 //Function Prototypes
 void playGame();
+void hasMovesLeft(int); //maybe pass board for most of these...
 void displayStats();
 bool isValidMove(int, int);
 bool placeTile(int, int);
+int* findBestMove();
 //minMax
 //findMin
 //findMax
-//placeTile
-//printCurrentBoard
-//hasMovesLeft
 
 //Global Variables
 //board array
@@ -68,6 +68,15 @@ void playGame() {
     //display final score and winner
 }
 
+bool hasMovesLeft(int player) {
+    //returns if the player has any more moves left
+    //iterate through each cell
+    // if the cell is empty
+    //  check that an adjacent cell has the opponent's colour
+    //   check that at the end of teh opponent's streak there is the player's colour
+    //    break when valid move is found
+}
+
 void displayStats() {
     //cout current score?
     //cout board
@@ -85,4 +94,25 @@ bool placeTile(int row, int column) {
     //if valid move
     // place the current player's colour in the cell
     // flip the adjacent opponent's colour train
+}
+
+int* findBestMove() {
+    //Iterate through moves to find the vaild moves
+    //set max score and best move
+    //On each valid move, make the move -- copy to new board
+    // Figure out the next to move (after the computer's move)
+    // If player, new score = min choice score
+    // If computer, new score = max choice
+    // if new score > max score
+    //  max score = new score
+    //  save move as the best move
+    //return best move
+}
+
+int maxChoice(int player, int* board) {
+
+}
+
+int minChoice(int player, int* board) {
+
 }
