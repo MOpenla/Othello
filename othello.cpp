@@ -40,6 +40,7 @@ pos = row + (8 * column)
 
 #include <iostream>
 #include <string>
+#include <climits> //max and min int
 
 using namespace std;
 
@@ -52,7 +53,7 @@ bool isValidMove(int*, int, int, int);
 bool isValidMove(int*, int, int);
 bool placeTile(int*, int, int, int);
 bool placeTile(int*, int, int);
-int* findBestMove(int*);
+int findBestMove(int*, int);
 int maxChoice(int, int*, int, int, int);
 int minChoice(int, int*, int, int, int);
 int heuristicEvaluation(int*, int);
@@ -178,8 +179,8 @@ void playGame(int* board) {
         if (currentPlayer == WHITE) { //Computer is current player
             if (hasMovesLeft(board, currentPlayer)) { //Computer has moves left
                 cout << "----------" << computerName << "'s turn" << "----------" << endl << endl;
-                displayStats(board);
-                //TODO do alpha-beta pruning to find move
+                int bestMove = findBestMove(board, currentPlayer);
+                placeTile(board, currentPlayer, bestMove);
             } else { //Computer has no moves left
                 cout << computerName << " has no available moves." << endl;
             }
@@ -210,9 +211,6 @@ bool hasMovesLeft(int* board, int player) {
 }
 
 void displayStats(int* board) {
-    //cout current score?
-    //cout board
-
     cout << "    0  1  2  3  4  5  6  7" << endl;
     int columnNum = 0;
 
@@ -241,11 +239,6 @@ bool isValidMove(int* board, int player, int row, int column) {
 }
 
 bool isValidMove(int* board, int player, int pos) {
-    //returns if the move is valid for the current player
-    //first make sure the cell isn't already taken
-    //then check that an adjacent square has the opponent's colour
-    //then check that at the end of the opponent's streak there is the player's colour
-
     bool valid = false;
 
     if (board[pos] == 0) {
@@ -267,11 +260,6 @@ bool placeTile(int* board, int player, int row, int column) {
 }
 
 bool placeTile(int* board, int player, int pos) {
-    //returns if the move was played or not
-    //if valid move
-    // place the current player's colour in the cell
-    // flip the adjacent opponent's colour train
-
     bool placed = false;
 
     if (board[pos] == 0) {
@@ -372,7 +360,7 @@ bool placeTile(int* board, int player, int pos) {
     return placed;
 }
 
-int* findBestMove(int* board) {
+int findBestMove(int* board, int currentPlayer) {
     //Iterate through moves to find the vaild moves
     //set max score and best move
     //On each valid move, make the move -- copy to new board
@@ -384,6 +372,34 @@ int* findBestMove(int* board) {
     //  save move as the best move
     // release the temp board
     //return best move
+
+    int maxScore = INT_MIN;
+    int bestMove = 0; //This is the position to place the tile for the best move
+    const int recursionLimit = 6;
+    int alpha = INT_MIN;
+    int beta = INT_MAX;
+
+    for (int i = 0; i < ROWS * COLUMNS; i++) {
+        if (isValidMove(board, currentPlayer, i)) {
+            int* newBoard = copyBoard(board);
+            int newScore = 0;
+
+            if (hasMovesLeft(newBoard, opponent(currentPlayer))) { //Opponent can move next
+                newScore = minChoice(opponent(currentPlayer), newBoard, recursionLimit, alpha, beta);
+            } else if (hasMovesLeft(newBoard, currentPlayer)) { //Computer can move next
+                newScore = maxChoice(currentPlayer, newBoard, recursionLimit, alpha, beta);
+            } else { //No one can move next, therefore no further analysis can be made
+                newScore = differenceEvaluation(board, currentPlayer);
+            }
+
+            if (newScore > maxScore) {
+                maxScore = newScore;
+                bestMove = i;
+            }
+        }
+    }
+
+    return bestMove;
 }
 
 int maxChoice(int player, int* board, int depth, int alpha, int beta) {
@@ -409,6 +425,35 @@ int maxChoice(int player, int* board, int depth, int alpha, int beta) {
     // alpha = Max(alpha, max)
     // release the temp board
     //return max
+
+    int max = INT_MIN;
+
+    if (depth <= 0) {
+        max = heuristicEvaluation(board, player);
+    } else {
+        int newScore = 0;
+
+        for (int i = 0; i < ROWS * COLUMNS; i++) {
+            if (isValidMove(board, player, i)) {
+                int* newBoard = copyBoard(board);
+
+                if (hasMovesLeft(newBoard, opponent(player))) { //Opponent can move next
+                    newScore = minChoice(opponent(player), newBoard, depth - 1, alpha, beta);
+                } else if (hasMovesLeft(newBoard, player)) { //Computer can move next
+                    newScore = maxChoice(player, newBoard, depth - 1, alpha, beta);
+                } else { //No one can move next, therefore no further analysis can be made
+                    newScore = differenceEvaluation(board, player);
+                }
+
+                if (newScore > max) {
+                    max = newScore;
+                }
+
+            }
+        }
+    }
+
+    return max;
 }
 
 int minChoice(int player, int* board, int depth, int alpha, int beta) {
@@ -434,6 +479,35 @@ int minChoice(int player, int* board, int depth, int alpha, int beta) {
     // beta = Min(beta, min)
     // release the temp board
     //return min
+
+    int min = INT_MAX;
+
+    if (depth <= 0) {
+        min = heuristicEvaluation(board, player);
+    } else {
+        int newScore = 0;
+
+        for (int i = 0; i < ROWS * COLUMNS; i++) {
+            if (isValidMove(board, player, i)) {
+                int* newBoard = copyBoard(board);
+
+                if (hasMovesLeft(newBoard, opponent(player))) { //Opponent can move next
+                    newScore = minChoice(opponent(player), newBoard, depth - 1, alpha, beta);
+                } else if (hasMovesLeft(newBoard, player)) { //Computer can move next
+                    newScore = maxChoice(player, newBoard, depth - 1, alpha, beta);
+                } else { //No one can move next, therefore no further analysis can be made
+                    newScore = differenceEvaluation(board, player);
+                }
+
+                if (newScore < min) {
+                    min = newScore;
+                }
+
+            }
+        }
+    }
+
+    return min;
 }
 
 int heuristicEvaluation(int* board, int player) {
@@ -469,7 +543,7 @@ int differenceEvaluation(int* board, int player) {
 }
 
 int* copyBoard(int* board) {
-    int* temp;
+    int* temp = new int[ROWS * COLUMNS];
 
     for (int i = 0; i < ROWS * COLUMNS; i++) {
         temp[i] = board[i];
@@ -477,6 +551,8 @@ int* copyBoard(int* board) {
 
     return temp;
 }
+
+
 
 
 
