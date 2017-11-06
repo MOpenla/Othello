@@ -169,7 +169,7 @@ int opponent(int player) {
 bool hasMovesLeft(int* board, int player) {
     bool hasMoveLeft = false;
 
-    for (int i = 0; i < ROWS * COLUMNS && !hasMoveLeft; i++) {
+    for (int i = 0; i < (ROWS * COLUMNS) - 1 && !hasMoveLeft; i++) {
         hasMoveLeft = isValidMove(board, player, i);
     }
 
