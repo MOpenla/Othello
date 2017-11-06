@@ -85,11 +85,22 @@ int initialValues[ROWS * COLUMNS] = {
     0, 0, 0, 0, 0, 0, 0, 0
 };
 
+string playerName;
+const string computerName = "Othello 9001";
+
 //board array
 //current player
 
 int main() {
     cout << "Hello and Welcome to the Othello game." << endl << endl;
+    cout << "Please enter your name: ";
+    getline(cin, playerName);
+
+    cout << endl;
+    cout << "Greetings " << playerName << ". My name is " << computerName << "." << endl;
+    cout << "Today we will be playing Othello. I hope you know the rules." << endl;
+    cout << "You will play as Black and I will play as White." << endl;
+    cout << "Let's get started." << endl << endl;
 
     //initialize things?
 
@@ -124,7 +135,24 @@ void playGame(int* board) {
     int currentPlayer = BLACK;
 
     while (hasMovesLeft(board, currentPlayer) || hasMovesLeft(board, opponent(currentPlayer))) {
+        if (currentPlayer == BLACK) { //Human is current player
+            if (hasMovesLeft(board, currentPlayer)) { //Human has moves left
+                cout << playerName << "'s turn." << endl;
 
+            } else { //Human has no moves
+                cout << playerName << " has no available moves." << endl;
+                currentPlayer = opponent(currentPlayer); //Computer's turn
+            }
+        }
+
+        if (currentPlayer == WHITE) { //Computer is current player
+            if (hasMovesLeft(board, currentPlayer)) { //Computer has moves left
+                cout << computerName << "'s turn." << endl;
+            } else { //Computer has no moves left
+                cout << computerName << " has no available moves." << endl;
+                currentPlayer = opponent(currentPlayer);
+            }
+        }
     }
 }
 
