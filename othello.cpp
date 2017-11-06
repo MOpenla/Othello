@@ -58,6 +58,7 @@ int maxChoice(int, int*, int, int, int);
 int minChoice(int, int*, int, int, int);
 int heuristicEvaluation(int*, int);
 int differenceEvaluation(int*, int);
+int score(int*, int);
 int* copyBoard(int*);
 bool hasTopTrain(int*, int, int);
 bool hasLeftTrain(int*, int, int);
@@ -179,8 +180,13 @@ void playGame(int* board) {
         if (currentPlayer == WHITE) { //Computer is current player
             if (hasMovesLeft(board, currentPlayer)) { //Computer has moves left
                 cout << "----------" << computerName << "'s turn" << "----------" << endl << endl;
+                displayStats(board);
+                cout << endl << endl;
+
                 int bestMove = findBestMove(board, currentPlayer);
                 placeTile(board, currentPlayer, bestMove);
+
+                cout << computerName << " placed a tile at " << (bestMove % 8) << ", " << (bestMove / 8) << "." << endl << endl;
             } else { //Computer has no moves left
                 cout << computerName << " has no available moves." << endl;
             }
@@ -211,6 +217,12 @@ bool hasMovesLeft(int* board, int player) {
 }
 
 void displayStats(int* board) {
+    cout << "Score" << endl;
+    cout << playerName << ":  " << score(board, BLACK) << endl;
+    cout << computerName << ":  " << score(board, WHITE) << endl;
+
+    cout << endl << endl;
+
     cout << "    0  1  2  3  4  5  6  7" << endl;
     int columnNum = 0;
 
@@ -527,19 +539,19 @@ int heuristicEvaluation(int* board, int player) {
 }
 
 int differenceEvaluation(int* board, int player) {
-    int playerCount = 0;
-    int opponentCount = 0;
-    int opnt = opponent(player);
+    return (score(board, player) - score(board, opponent(player)));
+}
 
-    for (int i = 1; i < ROWS * COLUMNS; i++) {
+int score(int* board, int player) {
+    int score = 0;
+
+    for (int i = 0; i < ROWS * COLUMNS; i++) {
         if (board[i] == player) {
-            playerCount++;
-        } else if (board[i] == opnt) {
-            opponentCount++;
+            score++;
         }
     }
 
-    return (playerCount - opponentCount);
+    return score;
 }
 
 int* copyBoard(int* board) {
