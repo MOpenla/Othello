@@ -27,7 +27,7 @@ Column Index = pos / 8
 Rows are vertical
 Columns are horizontal
 
-pos = ((row + 1) * (column + 1)) - 1
+pos = row + (8 * column)
 
 */
 
@@ -50,14 +50,22 @@ bool hasMovesLeft(int*, int);
 void displayStats(int*);
 bool isValidMove(int*, int, int, int);
 bool isValidMove(int*, int, int);
+bool placeTile(int*, int, int, int);
 bool placeTile(int*, int, int);
-bool placeTile(int*, int);
 int* findBestMove(int*);
 int maxChoice(int, int*, int, int, int);
 int minChoice(int, int*, int, int, int);
 int heuristicEvaluation(int*, int);
 int differenceEvaluation(int*, int);
 int* copyBoard(int*);
+bool hasTopTrain(int*, int, int);
+bool hasLeftTrain(int*, int, int);
+bool hasRightTrain(int*, int, int);
+bool hasBottomTrain(int*, int, int);
+bool hasTopLeftTrain(int*, int, int);
+bool hasTopRightTrain(int*, int, int);
+bool hasBottomLeftTrain(int*, int, int);
+bool hasBottomRightTrain(int*, int, int);
 
 //Global Variables
 const int ROWS = 8;
@@ -159,7 +167,7 @@ void playGame(int* board) {
                     cin >> columnIndex;
                 }
 
-                placeTile(board, rowIndex, columnIndex);
+                placeTile(board, currentPlayer, rowIndex, columnIndex);
 
             } else { //Human has no moves
                 cout << playerName << " has no available moves." << endl;
@@ -169,6 +177,7 @@ void playGame(int* board) {
         if (currentPlayer == WHITE) { //Computer is current player
             if (hasMovesLeft(board, currentPlayer)) { //Computer has moves left
                 cout << "----------" << computerName << "'s turn" << "----------" << endl << endl;
+                displayStats(board);
                 //TODO do alpha-beta pruning to find move
             } else { //Computer has no moves left
                 cout << computerName << " has no available moves." << endl;
@@ -227,7 +236,7 @@ void displayStats(int* board) {
 }
 
 bool isValidMove(int* board, int player, int row, int column) {
-    return (board, player, ((row + 1) * (column + 1)) - 1);
+    return (board, player, row + (ROWS * column));
 }
 
 bool isValidMove(int* board, int player, int pos) {
@@ -239,97 +248,24 @@ bool isValidMove(int* board, int player, int pos) {
     bool valid = false;
 
     if (board[pos] == 0) {
-
-        //Left Cell
-        int leftPos = pos - 1;
-        if (pos % ROWS != 0 && board[leftPos] == opponent(player)) {
-            while (leftPos % ROWS != 0 && board[leftPos - 1] == opponent(player)) {
-                leftPos--;
-            }
-
-            valid = leftPos % ROWS != 0 && board[leftPos - 1] == player;
-        }
-
-        //Right Cell
-        int rightPos = pos + 1;
-        if (!valid && pos % ROWS != ROWS && board[rightPos] == opponent(player)) {
-            while (rightPos % ROWS != ROWS && board[rightPos + 1] == opponent(player)) {
-                rightPos++;
-            }
-
-            valid = rightPos % ROWS != ROWS && board[rightPos + 1] == player;
-        }
-
-        //Up Cell
-        int upPos = pos - ROWS;
-        if (!valid && pos / COLUMNS != 0 && board[upPos] == opponent(player)) {
-            while (upPos / COLUMNS != 0 && board[leftPos - ROWS] == opponent(player)) {
-                upPos -= ROWS;
-            }
-
-            valid = upPos / COLUMNS != 0 && board[upPos - ROWS] == player;
-        }
-
-        //Down Cell
-        int downPos = pos + ROWS;
-        if (!valid && pos / COLUMNS != COLUMNS && board[downPos] == opponent(player)) {
-            while (downPos / COLUMNS != COLUMNS && board[leftPos + ROWS] == opponent(player)) {
-                downPos += ROWS;
-            }
-
-            valid = downPos / COLUMNS != COLUMNS && board[downPos + ROWS] == player;
-        }
-
-        //Top Left Cell
-        int topLeftPos = pos - (ROWS + 1);
-        if (!valid && pos / COLUMNS != 0 && pos % ROWS != 0 && board[topLeftPos] == opponent(player)) {
-            while (topLeftPos / COLUMNS != 0 && topLeftPos % ROWS != 0 && board[topLeftPos - (ROWS + 1)] == opponent(player)) {
-                topLeftPos -= ROWS + 1;
-            }
-
-            valid = topLeftPos / COLUMNS != 0 && topLeftPos % ROWS != 0 && board[topLeftPos - (ROWS + 1)] == player;
-        }
-
-        //Top Right Cell
-        int topRightPos = pos - (ROWS - 1);
-        if (!valid && pos / COLUMNS != 0 && pos % ROWS != ROWS && board[topLeftPos] == opponent(player)) {
-            while (topLeftPos / COLUMNS != 0 && topLeftPos % ROWS != ROWS && board[topLeftPos - (ROWS - 1)] == opponent(player)) {
-                topLeftPos -= ROWS - 1;
-            }
-
-            valid = topLeftPos / COLUMNS != 0 && topLeftPos % ROWS != ROWS && board[topLeftPos - (ROWS - 1)] == player;
-        }
-
-        //Bottom Left Cell
-        int bottomLeftPos = pos + (ROWS - 1);
-        if (!valid && pos / COLUMNS != COLUMNS && pos % ROWS != 0 && board[topLeftPos] == opponent(player)) {
-            while (topLeftPos / COLUMNS != COLUMNS && topLeftPos % ROWS != 0 && board[topLeftPos + (ROWS - 1)] == opponent(player)) {
-                topLeftPos += ROWS - 1;
-            }
-
-            valid = topLeftPos / COLUMNS != COLUMNS && topLeftPos % ROWS != 0 && board[topLeftPos + (ROWS - 1)] == player;
-        }
-
-        //Bottom Right Cell
-        int bottomRightPos = pos + (ROWS + 1);
-        if (!valid && pos / COLUMNS != COLUMNS && pos % ROWS != ROWS && board[topLeftPos] == opponent(player)) {
-            while (topLeftPos / COLUMNS != COLUMNS && topLeftPos % ROWS != ROWS && board[topLeftPos + (ROWS + 1)] == opponent(player)) {
-                topLeftPos += ROWS + 1;
-            }
-
-            valid = topLeftPos / COLUMNS != COLUMNS && topLeftPos % ROWS != ROWS && board[topLeftPos + (ROWS + 1)] == player;
-        }
-
+        valid = valid || hasTopTrain(board, player, pos);
+        valid = valid || hasLeftTrain(board, player, pos);
+        valid = valid || hasRightTrain(board, player, pos);
+        valid = valid || hasBottomTrain(board, player, pos);
+        valid = valid || hasTopLeftTrain(board, player, pos);
+        valid = valid || hasTopRightTrain(board, player, pos);
+        valid = valid || hasBottomLeftTrain(board, player, pos);
+        valid = valid || hasBottomRightTrain(board, player, pos);
     }
 
     return valid;
 }
 
-bool placeTile(int* board, int row, int column) {
-    return placeTile(board, ((row + 1) * (column + 1)) - 1);
+bool placeTile(int* board, int player, int row, int column) {
+    return placeTile(board, player, row + (ROWS * column));
 }
 
-bool placeTile(int* board, int pos) {
+bool placeTile(int* board, int player, int pos) {
     //returns if the move was played or not
     //if valid move
     // place the current player's colour in the cell
@@ -338,94 +274,96 @@ bool placeTile(int* board, int pos) {
     bool placed = false;
 
     if (board[pos] == 0) {
-
-        //Left Cell
-        int leftPos = pos - 1;
-        if (pos % ROWS != 0 && board[leftPos] == opponent(player)) {
-            while (leftPos % ROWS != 0 && board[leftPos - 1] == opponent(player)) {
-                leftPos--;
-            }
-
-            if (leftPos % ROWS != 0 && board[leftPos - 1] == player) {
-                leftPos = pos - 1;
-
-                while (leftPos % ROWS != 0 && board[leftPos - 1] == opponent(player)) {
-                    leftPos--;
-                    board[leftPos] = player;
-                }
-
-                placed = true;
-            }
-        }
-
-        //Right Cell
-        int rightPos = pos + 1;
-        if (pos % ROWS != ROWS && board[rightPos] == opponent(player)) {
-            while (rightPos % ROWS != ROWS && board[rightPos + 1] == opponent(player)) {
-                rightPos++;
-            }
-
-            valid = rightPos % ROWS != ROWS && board[rightPos + 1] == player;
-        }
+        board[pos] = player;
 
         //Up Cell
-        int upPos = pos - ROWS;
-        if (pos / COLUMNS != 0 && board[upPos] == opponent(player)) {
-            while (upPos / COLUMNS != 0 && board[leftPos - ROWS] == opponent(player)) {
+        if (hasTopTrain(board, player, pos)) {
+            int upPos = pos - ROWS;
+            while (upPos / COLUMNS != 0 && board[upPos] == opponent(player)) {
+                board[upPos] = player;
                 upPos -= ROWS;
             }
 
-            valid = upPos / COLUMNS != 0 && board[upPos - ROWS] == player;
+            placed = true;
+        }
+
+        //Left Cell
+        if (hasLeftTrain(board, player, pos)) {
+            int leftPos = pos - 1;
+            while (leftPos % ROWS != 0 && board[leftPos] == opponent(player)) {
+                board[leftPos] = player;
+                leftPos--;
+            }
+
+            placed = true;
+        }
+
+        //Right Cell
+        if (hasRightTrain(board, player, pos)) {
+            int rightPos = pos + 1;
+            while (rightPos % ROWS != ROWS && board[rightPos] == opponent(player)) {
+                board[rightPos] = player;
+                rightPos++;
+            }
+
+            placed = true;
         }
 
         //Down Cell
-        int downPos = pos + ROWS;
-        if (pos / COLUMNS != COLUMNS && board[downPos] == opponent(player)) {
-            while (downPos / COLUMNS != COLUMNS && board[leftPos + ROWS] == opponent(player)) {
+        if (hasBottomTrain(board, player, pos)) {
+            int downPos = pos + ROWS;
+            while (downPos / COLUMNS != COLUMNS && board[downPos] == opponent(player)) {
+                board[downPos] = player;
                 downPos += ROWS;
             }
 
-            valid = downPos / COLUMNS != COLUMNS && board[downPos + ROWS] == player;
+            placed = true;
+
         }
 
         //Top Left Cell
-        int topLeftPos = pos - (ROWS + 1);
-        if (pos / COLUMNS != 0 && pos % ROWS != 0 && board[topLeftPos] == opponent(player)) {
-            while (topLeftPos / COLUMNS != 0 && topLeftPos % ROWS != 0 && board[topLeftPos - (ROWS + 1)] == opponent(player)) {
+        if (hasTopLeftTrain(board, player, pos)) {
+            int topLeftPos = pos - (ROWS + 1);
+            while (topLeftPos / COLUMNS != 0 && topLeftPos % ROWS != 0 && board[topLeftPos] == opponent(player)) {
+                board[topLeftPos] = player;
                 topLeftPos -= ROWS + 1;
             }
 
-            valid = topLeftPos / COLUMNS != 0 && topLeftPos % ROWS != 0 && board[topLeftPos - (ROWS + 1)] == player;
+            placed = true;
         }
 
         //Top Right Cell
-        int topRightPos = pos - (ROWS - 1);
-        if (pos / COLUMNS != 0 && pos % ROWS != ROWS && board[topLeftPos] == opponent(player)) {
-            while (topLeftPos / COLUMNS != 0 && topLeftPos % ROWS != ROWS && board[topLeftPos - (ROWS - 1)] == opponent(player)) {
-                topLeftPos -= ROWS - 1;
+        if (hasTopRightTrain(board, player, pos)) {
+            int topRightPos = pos - (ROWS - 1);
+            while (topRightPos / COLUMNS != 0 && topRightPos % ROWS != ROWS && board[topRightPos] == opponent(player)) {
+                board[topRightPos] = player;
+                topRightPos -= ROWS - 1;
             }
 
-            valid = topLeftPos / COLUMNS != 0 && topLeftPos % ROWS != ROWS && board[topLeftPos - (ROWS - 1)] == player;
+            placed = true;
         }
 
         //Bottom Left Cell
-        int bottomLeftPos = pos + (ROWS - 1);
-        if (pos / COLUMNS != COLUMNS && pos % ROWS != 0 && board[topLeftPos] == opponent(player)) {
-            while (topLeftPos / COLUMNS != COLUMNS && topLeftPos % ROWS != 0 && board[topLeftPos + (ROWS - 1)] == opponent(player)) {
-                topLeftPos += ROWS - 1;
+        if (hasBottomLeftTrain(board, player, pos)) {
+            int bottomLeftPos = pos + (ROWS - 1);
+            while (bottomLeftPos / COLUMNS != COLUMNS && bottomLeftPos % ROWS != 0 && board[bottomLeftPos] == opponent(player)) {
+                board[bottomLeftPos] = player;
+                bottomLeftPos += ROWS - 1;
             }
 
-            valid = topLeftPos / COLUMNS != COLUMNS && topLeftPos % ROWS != 0 && board[topLeftPos + (ROWS - 1)] == player;
+            placed = true;
         }
 
         //Bottom Right Cell
-        int bottomRightPos = pos + (ROWS + 1);
-        if (pos / COLUMNS != COLUMNS && pos % ROWS != ROWS && board[topLeftPos] == opponent(player)) {
-            while (topLeftPos / COLUMNS != COLUMNS && topLeftPos % ROWS != ROWS && board[topLeftPos + (ROWS + 1)] == opponent(player)) {
-                topLeftPos += ROWS + 1;
+        if (hasBottomRightTrain(board, player, pos)) {
+            int bottomRightPos = pos + (ROWS + 1);
+            while (bottomRightPos / COLUMNS != COLUMNS && bottomRightPos % ROWS != ROWS && board[bottomRightPos] == opponent(player)) {
+                board[bottomRightPos] = player;
+                bottomRightPos += ROWS + 1;
             }
 
-            valid = topLeftPos / COLUMNS != COLUMNS && topLeftPos % ROWS != ROWS && board[topLeftPos + (ROWS + 1)] == player;
+            placed = true;
+
         }
 
     }
@@ -503,11 +441,11 @@ int heuristicEvaluation(int* board, int player) {
     int opnt = opponent(player);
 
     for (int i = 1; i < ROWS * COLUMNS; i++) {
-            if (board[i] == player) {
-                playerCount += heuristicValues[i];
-            } else if (board[i] == opnt) {
-                opponentCount += heuristicValues[i];
-            }
+        if (board[i] == player) {
+            playerCount += heuristicValues[i];
+        } else if (board[i] == opnt) {
+            opponentCount += heuristicValues[i];
+        }
     }
 
     return (playerCount - opponentCount);
@@ -537,4 +475,128 @@ int* copyBoard(int* board) {
     }
 
     return temp;
+}
+
+
+
+
+
+bool hasTopTrain(int* board, int player, int pos) {
+    bool valid = false;
+
+    int upPos = pos - ROWS;
+    if (pos / COLUMNS != 0 && board[upPos] == opponent(player)) {
+        while (upPos / COLUMNS != 0 && board[upPos - ROWS] == opponent(player)) {
+            upPos -= ROWS;
+        }
+
+        valid = upPos / COLUMNS != 0 && board[upPos - ROWS] == player;
+    }
+
+    return valid;
+}
+
+bool hasLeftTrain(int* board, int player, int pos) {
+    bool valid = false;
+
+    int leftPos = pos - 1;
+    if (pos % ROWS != 0 && board[leftPos] == opponent(player)) {
+        while (leftPos % ROWS != 0 && board[leftPos - 1] == opponent(player)) {
+            leftPos--;
+        }
+
+        valid = leftPos % ROWS != 0 && board[leftPos - 1] == player;
+    }
+
+    return valid;
+}
+
+bool hasRightTrain(int* board, int player, int pos) {
+    bool valid = false;
+
+    int rightPos = pos + 1;
+    if (pos % ROWS != ROWS && board[rightPos] == opponent(player)) {
+        while (rightPos % ROWS != ROWS && board[rightPos + 1] == opponent(player)) {
+            rightPos++;
+        }
+
+        valid = rightPos % ROWS != ROWS && board[rightPos + 1] == player;
+    }
+
+    return valid;
+}
+
+bool hasBottomTrain(int* board, int player, int pos) {
+    bool valid = false;
+
+    int downPos = pos + ROWS;
+    if (pos / COLUMNS != COLUMNS && board[downPos] == opponent(player)) {
+        while (downPos / COLUMNS != COLUMNS && board[downPos + ROWS] == opponent(player)) {
+            downPos += ROWS;
+        }
+
+        valid = downPos / COLUMNS != COLUMNS && board[downPos + ROWS] == player;
+    }
+
+    return valid;
+}
+
+bool hasTopLeftTrain(int* board, int player, int pos) {
+    bool valid = false;
+
+    int topLeftPos = pos - (ROWS + 1);
+    if (pos / COLUMNS != 0 && pos % ROWS != 0 && board[topLeftPos] == opponent(player)) {
+        while (topLeftPos / COLUMNS != 0 && topLeftPos % ROWS != 0 && board[topLeftPos - (ROWS + 1)] == opponent(player)) {
+            topLeftPos -= ROWS + 1;
+        }
+
+        valid = topLeftPos / COLUMNS != 0 && topLeftPos % ROWS != 0 && board[topLeftPos - (ROWS + 1)] == player;
+    }
+
+    return valid;
+}
+
+bool hasTopRightTrain(int* board, int player, int pos) {
+    bool valid = false;
+
+    int topRightPos = pos - (ROWS - 1);
+    if (pos / COLUMNS != 0 && pos % ROWS != ROWS && board[topRightPos] == opponent(player)) {
+        while (topRightPos / COLUMNS != 0 && topRightPos % ROWS != ROWS && board[topRightPos - (ROWS - 1)] == opponent(player)) {
+            topRightPos -= ROWS - 1;
+        }
+
+        valid = topRightPos / COLUMNS != 0 && topRightPos % ROWS != ROWS && board[topRightPos - (ROWS - 1)] == player;
+    }
+
+    return valid;
+}
+
+bool hasBottomLeftTrain(int* board, int player, int pos) {
+    bool valid = false;
+
+    int bottomLeftPos = pos + (ROWS - 1);
+    if (pos / COLUMNS != COLUMNS && pos % ROWS != 0 && board[bottomLeftPos] == opponent(player)) {
+        while (bottomLeftPos / COLUMNS != COLUMNS && bottomLeftPos % ROWS != 0 && board[bottomLeftPos + (ROWS - 1)] == opponent(player)) {
+            bottomLeftPos += ROWS - 1;
+        }
+
+        valid = bottomLeftPos / COLUMNS != COLUMNS && bottomLeftPos % ROWS != 0 && board[bottomLeftPos + (ROWS - 1)] == player;
+    }
+
+    return valid;
+}
+
+bool hasBottomRightTrain(int* board, int player, int pos) {
+    bool valid = false;
+
+    int bottomRightPos = pos + (ROWS + 1);
+    if (pos / COLUMNS != COLUMNS && pos % ROWS != ROWS && board[bottomRightPos] == opponent(player)) {
+        while (bottomRightPos / COLUMNS != COLUMNS && bottomRightPos % ROWS != ROWS && board[bottomRightPos + (ROWS + 1)] == opponent(player)) {
+            bottomRightPos += ROWS + 1;
+        }
+
+        valid = bottomRightPos / COLUMNS != COLUMNS && bottomRightPos % ROWS != ROWS && board[bottomRightPos + (ROWS + 1)] == player;
+    }
+
+    return valid;
 }
