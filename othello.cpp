@@ -23,11 +23,10 @@
 
 Row Index = pos % 8
 Column Index = pos / 8
+pos = row + (8 * column)
 
 Rows are vertical
 Columns are horizontal
-
-pos = row + (8 * column)
 
 */
 
@@ -72,6 +71,8 @@ bool hasBottomRightTrain(int*, int, int);
 //Global Variables
 const int ROWS = 8;
 const int COLUMNS = 8;
+const int BLACK = 1; //human player
+const int WHITE = -1; //computer player
 
 const int heuristicValues[ROWS * COLUMNS] = {
     1000, 50, 100, 100, 100, 100, 50, 1000,
@@ -83,8 +84,6 @@ const int heuristicValues[ROWS * COLUMNS] = {
     50, -20, -10, -10, -10, -10, -20, 50,
     1000, 50, 100, 100, 100, 100, 50, 1000
 };
-const int BLACK = 1; //human player
-const int WHITE = -1; //computer player
 
 int initialValues[ROWS * COLUMNS] = {
     0, 0, 0, 0, 0, 0, 0, 0,
@@ -101,25 +100,34 @@ string playerName;
 const string computerName = "Othello 9001";
 
 int main() {
+    //Welcome the player and get their name for a more personalized experience
     cout << "Hello and Welcome to the Othello game." << endl << endl;
     cout << "Please enter your name: ";
     getline(cin, playerName);
 
     cout << endl;
+
+    //Greet the player and lay down some base rules
     cout << "Greetings " << playerName << ". My name is " << computerName << "." << endl;
     cout << "Today we will be playing Othello. I hope you know the rules." << endl;
     cout << "You will play as Black and I will play as White." << endl;
     cout << "Let's get started." << endl << endl;
 
-    //initialize things?
     playGame(initialValues);
 
-    //ask if they wish to play again
-    //while player wants to play again
-    // reinitialize things
-    // playGame
-    // ask if they wish to play again
-    //display a thank you and good bye message
+    char again;
+    cout << "Would you like to play again (y for yes)? ";
+    cin >> again;
+
+    while (again == 'y') {
+        playGame(initialValues);
+
+        cout << "Would you like to play again (y for yes)? ";
+        cin >> again;
+    }
+
+    cout << endl << endl;
+    cout << "Thank you " << playerName << " for playing and have a wonderful day :)" << endl;
 
     return 0;
 }
