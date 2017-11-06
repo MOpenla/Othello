@@ -3,7 +3,7 @@
  *
  * Developed by: Mitchell Openlander
  * For: CS 4200 - Artificial Intelligence Methods
- *      Doctor Jake J.K. Lee
+ *      Doctor J.K. Jake Lee
  *
  * //TODO general method used and whatnot
  ******************************************************************************/
@@ -594,7 +594,23 @@ int* copyBoard(int* board) {
 
 
 
-
+/*
+ * These functions check if the opponent occupies a cell adjacent to pos
+ *
+ *  If the opponent does occupy an adjacent cell then these functions check
+ *   that the opponent occupies more cells in that direction.
+ *   at the end of the train of opponent cells,
+ *   these functions also check that there is a player cell.
+ *  If the above conditions are true then the function returns true,
+ *   else false is returned.
+ *
+ *  The general algorithm is
+ *   1. Check that the current cell is not an edje cell
+ *   2. Check that the adjacent cell contains the opponent's colour
+ *   3. If 1 and 2 hold then loop while the adjacent cell is not an edge cell
+ *       and the next adjacent cell contains the opponent's colour.
+ *   4. Finally check that at the end of the train of opponent cells is a player cell.
+ */
 
 bool hasTopTrain(int* board, int player, int pos) {
     bool valid = false;
