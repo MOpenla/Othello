@@ -7,6 +7,7 @@
  *
  * //TODO general method used and whatnot
  ******************************************************************************/
+
 /*
 
 //   0  1  2  3  4  5  6  7  Row Index
@@ -88,9 +89,6 @@ int initialValues[ROWS * COLUMNS] = {
 
 string playerName;
 const string computerName = "Othello 9001";
-
-//board array
-//current player
 
 int main() {
     cout << "Hello and Welcome to the Othello game." << endl << endl;
@@ -336,6 +334,103 @@ bool placeTile(int* board, int pos) {
     //if valid move
     // place the current player's colour in the cell
     // flip the adjacent opponent's colour train
+
+    bool placed = false;
+
+    if (board[pos] == 0) {
+
+        //Left Cell
+        int leftPos = pos - 1;
+        if (pos % ROWS != 0 && board[leftPos] == opponent(player)) {
+            while (leftPos % ROWS != 0 && board[leftPos - 1] == opponent(player)) {
+                leftPos--;
+            }
+
+            if (leftPos % ROWS != 0 && board[leftPos - 1] == player) {
+                leftPos = pos - 1;
+
+                while (leftPos % ROWS != 0 && board[leftPos - 1] == opponent(player)) {
+                    leftPos--;
+                    board[leftPos] = player;
+                }
+
+                placed = true;
+            }
+        }
+
+        //Right Cell
+        int rightPos = pos + 1;
+        if (pos % ROWS != ROWS && board[rightPos] == opponent(player)) {
+            while (rightPos % ROWS != ROWS && board[rightPos + 1] == opponent(player)) {
+                rightPos++;
+            }
+
+            valid = rightPos % ROWS != ROWS && board[rightPos + 1] == player;
+        }
+
+        //Up Cell
+        int upPos = pos - ROWS;
+        if (pos / COLUMNS != 0 && board[upPos] == opponent(player)) {
+            while (upPos / COLUMNS != 0 && board[leftPos - ROWS] == opponent(player)) {
+                upPos -= ROWS;
+            }
+
+            valid = upPos / COLUMNS != 0 && board[upPos - ROWS] == player;
+        }
+
+        //Down Cell
+        int downPos = pos + ROWS;
+        if (pos / COLUMNS != COLUMNS && board[downPos] == opponent(player)) {
+            while (downPos / COLUMNS != COLUMNS && board[leftPos + ROWS] == opponent(player)) {
+                downPos += ROWS;
+            }
+
+            valid = downPos / COLUMNS != COLUMNS && board[downPos + ROWS] == player;
+        }
+
+        //Top Left Cell
+        int topLeftPos = pos - (ROWS + 1);
+        if (pos / COLUMNS != 0 && pos % ROWS != 0 && board[topLeftPos] == opponent(player)) {
+            while (topLeftPos / COLUMNS != 0 && topLeftPos % ROWS != 0 && board[topLeftPos - (ROWS + 1)] == opponent(player)) {
+                topLeftPos -= ROWS + 1;
+            }
+
+            valid = topLeftPos / COLUMNS != 0 && topLeftPos % ROWS != 0 && board[topLeftPos - (ROWS + 1)] == player;
+        }
+
+        //Top Right Cell
+        int topRightPos = pos - (ROWS - 1);
+        if (pos / COLUMNS != 0 && pos % ROWS != ROWS && board[topLeftPos] == opponent(player)) {
+            while (topLeftPos / COLUMNS != 0 && topLeftPos % ROWS != ROWS && board[topLeftPos - (ROWS - 1)] == opponent(player)) {
+                topLeftPos -= ROWS - 1;
+            }
+
+            valid = topLeftPos / COLUMNS != 0 && topLeftPos % ROWS != ROWS && board[topLeftPos - (ROWS - 1)] == player;
+        }
+
+        //Bottom Left Cell
+        int bottomLeftPos = pos + (ROWS - 1);
+        if (pos / COLUMNS != COLUMNS && pos % ROWS != 0 && board[topLeftPos] == opponent(player)) {
+            while (topLeftPos / COLUMNS != COLUMNS && topLeftPos % ROWS != 0 && board[topLeftPos + (ROWS - 1)] == opponent(player)) {
+                topLeftPos += ROWS - 1;
+            }
+
+            valid = topLeftPos / COLUMNS != COLUMNS && topLeftPos % ROWS != 0 && board[topLeftPos + (ROWS - 1)] == player;
+        }
+
+        //Bottom Right Cell
+        int bottomRightPos = pos + (ROWS + 1);
+        if (pos / COLUMNS != COLUMNS && pos % ROWS != ROWS && board[topLeftPos] == opponent(player)) {
+            while (topLeftPos / COLUMNS != COLUMNS && topLeftPos % ROWS != ROWS && board[topLeftPos + (ROWS + 1)] == opponent(player)) {
+                topLeftPos += ROWS + 1;
+            }
+
+            valid = topLeftPos / COLUMNS != COLUMNS && topLeftPos % ROWS != ROWS && board[topLeftPos + (ROWS + 1)] == player;
+        }
+
+    }
+
+    return placed;
 }
 
 int* findBestMove(int* board) {
