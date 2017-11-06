@@ -9,7 +9,7 @@
  ******************************************************************************/
 /*
 
-//   0  1  2  3  4  5  6  7
+//   0  1  2  3  4  5  6  7  Row Index
 
 0    0  1  2  3  4  5  6  7
 1    8  9 10 11 12 13 14 15
@@ -19,6 +19,14 @@
 5   40 41 42 43 44 45 46 47
 6   48 49 50 51 52 53 54 55
 7   56 57 58 59 60 61 62 63
+
+Row Index = pos % 8
+Column Index = pos / 8
+
+Rows are vertical
+Columns are horizontal
+
+pos = ((row + 1) * (column + 1)) - 1
 
 */
 
@@ -146,7 +154,7 @@ void displayStats(int* board) {
 }
 
 bool isValidMove(int* board, int player, int row, int column) {
-    return (board, player, row * column);
+    return (board, player, ((row + 1) * (column + 1)) - 1);
 }
 
 bool isValidMove(int* board, int player, int pos) {
@@ -158,7 +166,48 @@ bool isValidMove(int* board, int player, int pos) {
     bool valid = false;
 
     if (board[pos] == 0) {
-        valid = true; //TODO this is not true
+
+        //Left Cell
+        int leftPos = pos - 1;
+        if (pos % ROWS != 0 && board[leftPos] == opponent(player)) {
+            while (leftPos % ROWS != 0 && board[leftPos - 1] == opponent(player)) {
+                leftPos--;
+            }
+
+            valid = leftPos % ROWS != 0 && board[leftPos - 1] == player;
+        }
+
+        //Right Cell
+        int rightPos = pos + 1;
+        if (!valid && pos % ROWS != ROWS && board[rightPos] == opponent(player)) {
+            while (rightPos % ROWS != ROWS && board[rightPos + 1] == opponent(player)) {
+                rightPos++;
+            }
+
+            valid = rightPos % ROWS != ROWS && board[rightPos + 1] == player;
+        }
+
+        //Up Cell
+        int upPos = pos - ROWS;
+        if (!valid && pos / COLUMNS != 0 && board[upPos] == opponent(player)) {
+            while (upPos / COLUMNS != 0 && board[leftPos - ROWS] == opponent(player)) {
+                upPos -= ROWS;
+            }
+
+            valid = upPos / COLUMNS != 0 && board[upPos - ROWS] == player;
+        }
+
+        //Down Cell
+        int downPos = pos + ROWS;
+        if (!valid && pos / COLUMNS != COLUMNS && board[downPos] == opponent(player)) {
+            while (downPos / COLUMNS != COLUMNS && board[leftPos + ROWS] == opponent(player)) {
+                downPos += ROWS;
+            }
+
+            valid = downPos / COLUMNS != COLUMNS && board[downPos + ROWS] == player;
+        }
+
+        //TODO diagonals
     }
 
     return valid;
