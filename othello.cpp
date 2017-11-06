@@ -7,6 +7,21 @@
  *
  * //TODO general method used and whatnot
  ******************************************************************************/
+/*
+
+//   0  1  2  3  4  5  6  7
+
+0    0  1  2  3  4  5  6  7
+1    8  9 10 11 12 13 14 15
+2   16 17 18 19 20 21 22 23
+3   24 25 26 27 28 29 30 31
+4   32 33 34 35 36 37 38 39
+5   40 41 42 43 44 45 46 47
+6   48 49 50 51 52 53 54 55
+7   56 57 58 59 60 61 62 63
+
+*/
+
 
 //Black = 1
 //White = -1
@@ -22,8 +37,9 @@ using namespace std;
 //Function Prototypes
 void playGame(int*);
 int opponent(int);
-void hasMovesLeft(int*, int);
+bool hasMovesLeft(int*, int);
 void displayStats(int*);
+bool isValidMove(int*, int, int, int);
 bool isValidMove(int*, int, int);
 bool placeTile(int*, int, int);
 int* findBestMove(int*);
@@ -34,28 +50,31 @@ int differenceEvaluation(int*, int);
 int* copyBoard(int*);
 
 //Global Variables
-const int heuristicValues[][] = {
-    {1000, 50, 100, 100, 100, 100, 50, 1000},
-    {50, -20, -10, -10, -10, -10, -20, 50},
-    {100, -10, 1, 1, 1, 1, -10, 100},
-    {100, -10, 1, 1, 1, 1, -10, 100},
-    {100, -10, 1, 1, 1, 1, -10, 100},
-    {100, -10, 1, 1, 1, 1, -10, 100},
-    {50, -20, -10, -10, -10, -10, -20, 50},
-    {1000, 50, 100, 100, 100, 100, 50, 1000}
+const int ROWS = 8;
+const int COLUMNS = 8;
+
+const int heuristicValues[ROWS * COLUMNS] = {
+    1000, 50, 100, 100, 100, 100, 50, 1000,
+    50, -20, -10, -10, -10, -10, -20, 50,
+    100, -10, 1, 1, 1, 1, -10, 100,
+    100, -10, 1, 1, 1, 1, -10, 100,
+    100, -10, 1, 1, 1, 1, -10, 100,
+    100, -10, 1, 1, 1, 1, -10, 100,
+    50, -20, -10, -10, -10, -10, -20, 50,
+    1000, 50, 100, 100, 100, 100, 50, 1000
 };
 const int BLACK = 1; //human player
 const int WHITE = -1; //computer player
 
-const int initialValues[][] = {
-    {0, 0, 0, 0, 0, 0, 0, 0},
-    {0, 0, 0, 0, 0, 0, 0, 0},
-    {0, 0, 0, 0, 0, 0, 0, 0},
-    {0, 0, 0, -1, 1, 0, 0, 0},
-    {0, 0, 0, 1, -1, 0, 0, 0},
-    {0, 0, 0, 0, 0, 0, 0, 0},
-    {0, 0, 0, 0, 0, 0, 0, 0},
-    {0, 0, 0, 0, 0, 0, 0, 0}
+int initialValues[ROWS * COLUMNS] = {
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, -1, 1, 0, 0, 0,
+    0, 0, 0, 1, -1, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0
 };
 
 //board array
@@ -93,19 +112,32 @@ void playGame(int* board) {
     //  apply that move
     // switch players
     //display final score and winner
+
+    int currentPlayer = BLACK;
+
+    while (hasMovesLeft(board, currentPlayer) || hasMovesLeft(board, opponent(currentPlayer))) {
+
+    }
 }
 
 int opponent(int player) {
-    //return the other player
+    int opnt = WHITE;
+
+    if (player == WHITE) {
+        opnt = BLACK;
+    }
+
+    return opnt;
 }
 
 bool hasMovesLeft(int* board, int player) {
-    //returns if the player has any more moves left
-    //iterate through each cell
-    // if the cell is empty
-    //  check that an adjacent cell has the opponent's colour
-    //   check that at the end of teh opponent's streak there is the player's colour
-    //    break when valid move is found
+    bool hasMoveLeft = false;
+
+    for (int i = 0; i < ROWS * COLUMNS && !hasMoveLeft; i++) {
+        hasMoveLeft = isValidMove(board, player, i);
+    }
+
+    return hasMoveLeft;
 }
 
 void displayStats(int* board) {
@@ -113,11 +145,23 @@ void displayStats(int* board) {
     //cout board
 }
 
-bool isValidMove(int* board, int row, int column) {
+bool isValidMove(int* board, int player, int row, int column) {
+    return (board, player, row * column);
+}
+
+bool isValidMove(int* board, int player, int pos) {
     //returns if the move is valid for the current player
     //first make sure the cell isn't already taken
     //then check that an adjacent square has the opponent's colour
     //then check that at the end of the opponent's streak there is the player's colour
+
+    bool valid = false;
+
+    if (board[pos] == 0) {
+        valid = true; //TODO this is not true
+    }
+
+    return valid;
 }
 
 bool placeTile(int* board, int row, int column) {
@@ -194,16 +238,14 @@ int minChoice(int player, int* board, int depth, int alpha, int beta) {
 int heuristicEvaluation(int* board, int player) {
     int playerCount = 0;
     int opponentCount = 0;
-    int opponent = opponent(player);
+    int opnt = opponent(player);
 
-    for (int i = 1; i < 8; i++) { //rows
-        for (int j = 1; j < 8; j++) { //columns
-            if (board[i][j] == player) {
-                playerCount += heuristicValues[i][j];
-            } else if (board[i][j] == opponent) {
-                opponentCount += heuristicValues[i][j];
+    for (int i = 1; i < ROWS * COLUMNS; i++) {
+            if (board[i] == player) {
+                playerCount += heuristicValues[i];
+            } else if (board[i] == opnt) {
+                opponentCount += heuristicValues[i];
             }
-        }
     }
 
     return (playerCount - opponentCount);
@@ -212,15 +254,13 @@ int heuristicEvaluation(int* board, int player) {
 int differenceEvaluation(int* board, int player) {
     int playerCount = 0;
     int opponentCount = 0;
-    int opponent = opponent(player);
+    int opnt = opponent(player);
 
-    for (int i = 1; i < 8; i++) { //rows
-        for (int j = 1; j < 8; j++) { //culumns
-            if (board[i][j] == player) {
-                playerCount++;
-            } else if (board[i][j] == opponent) {
-                opponentCount++;
-            }
+    for (int i = 1; i < ROWS * COLUMNS; i++) {
+        if (board[i] == player) {
+            playerCount++;
+        } else if (board[i] == opnt) {
+            opponentCount++;
         }
     }
 
@@ -228,12 +268,10 @@ int differenceEvaluation(int* board, int player) {
 }
 
 int* copyBoard(int* board) {
-    int temp[8][8];
+    int temp[ROWS * COLUMNS];
 
-    for (int i = 0; i < 8; i++) {
-        for (int j = 0; j < 8; j++) {
-            temp[i][j] = board[i][j];
-        }
+    for (int i = 0; i < ROWS * COLUMNS; i++) {
+        temp[i] = board[i];
     }
 
     return temp;
