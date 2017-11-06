@@ -50,6 +50,7 @@ void displayStats(int*);
 bool isValidMove(int*, int, int, int);
 bool isValidMove(int*, int, int);
 bool placeTile(int*, int, int);
+bool placeTile(int*, int);
 int* findBestMove(int*);
 int maxChoice(int, int*, int, int, int);
 int minChoice(int, int*, int, int, int);
@@ -103,8 +104,7 @@ int main() {
     cout << "Let's get started." << endl << endl;
 
     //initialize things?
-
-    playGame(copyBoard(initialValues));
+    playGame(initialValues);
 
     //ask if they wish to play again
     //while player wants to play again
@@ -137,22 +137,47 @@ void playGame(int* board) {
     while (hasMovesLeft(board, currentPlayer) || hasMovesLeft(board, opponent(currentPlayer))) {
         if (currentPlayer == BLACK) { //Human is current player
             if (hasMovesLeft(board, currentPlayer)) { //Human has moves left
-                cout << playerName << "'s turn." << endl;
+                cout << "----------" << playerName << "'s turn" << "----------" << endl << endl;
+                displayStats(board);
+
+                cout << endl << endl;
+
+                int rowIndex = 0;
+                int columnIndex = 0;
+
+                cout << "Row Index: ";
+                cin >> rowIndex;
+                cout << "Column Index: ";
+                cin >> columnIndex;
+
+                cout << endl;
+
+                while (!isValidMove(board, currentPlayer, rowIndex, columnIndex)) {
+                    cout << "Sorry, that move is not valid." << endl << endl;
+
+                    cout << "Row Index: ";
+                    cin >> rowIndex;
+                    cout << "Column Index: ";
+                    cin >> columnIndex;
+                }
+
+                placeTile(board, rowIndex, columnIndex);
 
             } else { //Human has no moves
                 cout << playerName << " has no available moves." << endl;
-                currentPlayer = opponent(currentPlayer); //Computer's turn
             }
         }
 
         if (currentPlayer == WHITE) { //Computer is current player
             if (hasMovesLeft(board, currentPlayer)) { //Computer has moves left
-                cout << computerName << "'s turn." << endl;
+                cout << "----------" << computerName << "'s turn" << "----------" << endl << endl;
+                //TODO do alpha-beta pruning to find move
             } else { //Computer has no moves left
                 cout << computerName << " has no available moves." << endl;
-                currentPlayer = opponent(currentPlayer);
             }
         }
+
+        currentPlayer = opponent(currentPlayer);
     }
 }
 
@@ -169,7 +194,7 @@ int opponent(int player) {
 bool hasMovesLeft(int* board, int player) {
     bool hasMoveLeft = false;
 
-    for (int i = 0; i < (ROWS * COLUMNS) - 1 && !hasMoveLeft; i++) {
+    for (int i = 0; i < ROWS * COLUMNS && !hasMoveLeft; i++) {
         hasMoveLeft = isValidMove(board, player, i);
     }
 
@@ -179,6 +204,28 @@ bool hasMovesLeft(int* board, int player) {
 void displayStats(int* board) {
     //cout current score?
     //cout board
+
+    cout << "    0  1  2  3  4  5  6  7" << endl;
+    int columnNum = 0;
+
+    for (int i = 0; i < ROWS * COLUMNS; i++) {
+        if (i % ROWS == 0) {
+            cout << endl;
+            cout << columnNum << "   ";
+
+            columnNum++;
+        }
+
+        char output = '-';
+
+        if (board[i] == -1) {
+            output = 'W';
+        } else if (board[i] == 1) {
+            output = 'B';
+        }
+
+        cout << output << "  ";
+    }
 }
 
 bool isValidMove(int* board, int player, int row, int column) {
@@ -242,6 +289,10 @@ bool isValidMove(int* board, int player, int pos) {
 }
 
 bool placeTile(int* board, int row, int column) {
+    return placeTile(board, ((row + 1) * (column + 1)) - 1);
+}
+
+bool placeTile(int* board, int pos) {
     //returns if the move was played or not
     //if valid move
     // place the current player's colour in the cell
@@ -345,7 +396,7 @@ int differenceEvaluation(int* board, int player) {
 }
 
 int* copyBoard(int* board) {
-    int temp[ROWS * COLUMNS];
+    int* temp;
 
     for (int i = 0; i < ROWS * COLUMNS; i++) {
         temp[i] = board[i];
