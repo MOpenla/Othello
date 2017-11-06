@@ -282,7 +282,46 @@ bool isValidMove(int* board, int player, int pos) {
             valid = downPos / COLUMNS != COLUMNS && board[downPos + ROWS] == player;
         }
 
-        //TODO diagonals
+        //Top Left Cell
+        int topLeftPos = pos - (ROWS + 1);
+        if (!valid && pos / COLUMNS != 0 && pos % ROWS != 0 && board[topLeftPos] == opponent(player)) {
+            while (topLeftPos / COLUMNS != 0 && topLeftPos % ROWS != 0 && board[topLeftPos - (ROWS + 1)] == opponent(player)) {
+                topLeftPos -= ROWS + 1;
+            }
+
+            valid = topLeftPos / COLUMNS != 0 && topLeftPos % ROWS != 0 && board[topLeftPos - (ROWS + 1)] == player;
+        }
+
+        //Top Right Cell
+        int topRightPos = pos - (ROWS - 1);
+        if (!valid && pos / COLUMNS != 0 && pos % ROWS != ROWS && board[topLeftPos] == opponent(player)) {
+            while (topLeftPos / COLUMNS != 0 && topLeftPos % ROWS != ROWS && board[topLeftPos - (ROWS - 1)] == opponent(player)) {
+                topLeftPos -= ROWS - 1;
+            }
+
+            valid = topLeftPos / COLUMNS != 0 && topLeftPos % ROWS != ROWS && board[topLeftPos - (ROWS - 1)] == player;
+        }
+
+        //Bottom Left Cell
+        int bottomLeftPos = pos + (ROWS - 1);
+        if (!valid && pos / COLUMNS != COLUMNS && pos % ROWS != 0 && board[topLeftPos] == opponent(player)) {
+            while (topLeftPos / COLUMNS != COLUMNS && topLeftPos % ROWS != 0 && board[topLeftPos + (ROWS - 1)] == opponent(player)) {
+                topLeftPos += ROWS - 1;
+            }
+
+            valid = topLeftPos / COLUMNS != COLUMNS && topLeftPos % ROWS != 0 && board[topLeftPos + (ROWS - 1)] == player;
+        }
+
+        //Bottom Right Cell
+        int bottomRightPos = pos + (ROWS + 1);
+        if (!valid && pos / COLUMNS != COLUMNS && pos % ROWS != ROWS && board[topLeftPos] == opponent(player)) {
+            while (topLeftPos / COLUMNS != COLUMNS && topLeftPos % ROWS != ROWS && board[topLeftPos + (ROWS + 1)] == opponent(player)) {
+                topLeftPos += ROWS + 1;
+            }
+
+            valid = topLeftPos / COLUMNS != COLUMNS && topLeftPos % ROWS != ROWS && board[topLeftPos + (ROWS + 1)] == player;
+        }
+
     }
 
     return valid;
