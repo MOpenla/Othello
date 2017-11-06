@@ -113,20 +113,20 @@ int main() {
     cout << "You will play as Black and I will play as White." << endl;
     cout << "Let's get started." << endl << endl;
 
-    playGame(initialValues);
+    playGame(copyBoard(initialValues));
 
     char again;
-    cout << "Would you like to play again (y for yes)? ";
+    cout << endl << "Would you like to play again (y for yes)? ";
     cin >> again;
 
     while (again == 'y') {
-        playGame(initialValues);
+        playGame(copyBoard(initialValues));
 
-        cout << "Would you like to play again (y for yes)? ";
+        cout << endl << "Would you like to play again (y for yes)? ";
         cin >> again;
     }
 
-    cout << endl << endl;
+    cout << endl;
     cout << "Thank you " << playerName << " for playing and have a wonderful day :)" << endl;
 
     return 0;
@@ -201,6 +201,24 @@ void playGame(int* board) {
         }
 
         currentPlayer = opponent(currentPlayer);
+    }
+
+    int humanScore = score(board, BLACK);
+    int computerScore = score(board, WHITE);
+
+    cout << "No more moves left." << endl << endl;
+    cout << "---Final Score---" << endl;
+    cout << playerName << ":  " << humanScore << endl;
+    cout << computerName << ":  " << computerScore << endl << endl;
+
+    if (humanScore > computerScore) { //Human wins
+        cout << playerName << " wins!" << endl;
+        cout << "Good job!" << endl;
+    } else if (computerScore > humanScore) { //Computer wins
+        cout << computerName << " wins." << endl;
+        cout << "Better luck next time." << endl;
+    } else { //Tie
+        cout << "Tie game." << endl;
     }
 }
 
