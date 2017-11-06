@@ -159,7 +159,8 @@ void playGame(int* board) {
                 cout << endl;
 
                 while (!isValidMove(board, currentPlayer, rowIndex, columnIndex)) {
-                    cout << "Sorry, that move is not valid." << endl << endl;
+                    cout << "Sorry, that move is not valid." << endl;
+                    cout << "Please try again." << endl << endl;
 
                     cout << "Row Index: ";
                     cin >> rowIndex;
@@ -236,7 +237,7 @@ void displayStats(int* board) {
 }
 
 bool isValidMove(int* board, int player, int row, int column) {
-    return (board, player, row + (ROWS * column));
+    return isValidMove(board, player, row + (ROWS * column));
 }
 
 bool isValidMove(int* board, int player, int pos) {
