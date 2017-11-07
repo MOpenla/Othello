@@ -332,7 +332,7 @@ bool placeTile(int* board, int player, int pos) {
         //Right Cell
         if (hasRightTrain(board, player, pos)) {
             int rightPos = pos + 1;
-            while (rightPos % ROWS != ROWS && board[rightPos] == opponent(player)) {
+            while (rightPos % ROWS != ROWS - 1 && board[rightPos] == opponent(player)) {
                 board[rightPos] = player;
                 rightPos++;
             }
@@ -343,7 +343,7 @@ bool placeTile(int* board, int player, int pos) {
         //Down Cell
         if (hasBottomTrain(board, player, pos)) {
             int downPos = pos + ROWS;
-            while (downPos / COLUMNS != COLUMNS && board[downPos] == opponent(player)) {
+            while (downPos / COLUMNS != COLUMNS - 1 && board[downPos] == opponent(player)) {
                 board[downPos] = player;
                 downPos += ROWS;
             }
@@ -366,7 +366,7 @@ bool placeTile(int* board, int player, int pos) {
         //Top Right Cell
         if (hasTopRightTrain(board, player, pos)) {
             int topRightPos = pos - (ROWS - 1);
-            while (topRightPos / COLUMNS != 0 && topRightPos % ROWS != ROWS && board[topRightPos] == opponent(player)) {
+            while (topRightPos / COLUMNS != 0 && topRightPos % ROWS != ROWS - 1 && board[topRightPos] == opponent(player)) {
                 board[topRightPos] = player;
                 topRightPos -= ROWS - 1;
             }
@@ -377,7 +377,7 @@ bool placeTile(int* board, int player, int pos) {
         //Bottom Left Cell
         if (hasBottomLeftTrain(board, player, pos)) {
             int bottomLeftPos = pos + (ROWS - 1);
-            while (bottomLeftPos / COLUMNS != COLUMNS && bottomLeftPos % ROWS != 0 && board[bottomLeftPos] == opponent(player)) {
+            while (bottomLeftPos / COLUMNS != COLUMNS - 1 && bottomLeftPos % ROWS != 0 && board[bottomLeftPos] == opponent(player)) {
                 board[bottomLeftPos] = player;
                 bottomLeftPos += ROWS - 1;
             }
@@ -388,7 +388,7 @@ bool placeTile(int* board, int player, int pos) {
         //Bottom Right Cell
         if (hasBottomRightTrain(board, player, pos)) {
             int bottomRightPos = pos + (ROWS + 1);
-            while (bottomRightPos / COLUMNS != COLUMNS && bottomRightPos % ROWS != ROWS && board[bottomRightPos] == opponent(player)) {
+            while (bottomRightPos / COLUMNS != COLUMNS - 1 && bottomRightPos % ROWS != ROWS - 1 && board[bottomRightPos] == opponent(player)) {
                 board[bottomRightPos] = player;
                 bottomRightPos += ROWS + 1;
             }
