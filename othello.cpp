@@ -248,8 +248,8 @@ bool hasMovesLeft(int* board, int player) {
 
 void displayStats(int* board) {
     cout << "Score" << endl;
-    cout << playerName << ":  " << score(board, BLACK) << endl;
-    cout << computerName << ":  " << score(board, WHITE) << endl;
+    cout << " - " << playerName << ":  " << score(board, BLACK) << endl;
+    cout << " - " << computerName << ":  " << score(board, WHITE) << endl;
 
     cout << endl << endl;
 
@@ -424,10 +424,11 @@ int findBestMove(int* board, int currentPlayer) {
     for (int i = 0; i < ROWS * COLUMNS; i++) {
         if (isValidMove(board, currentPlayer, i)) {
             int* newBoard = copyBoard(board);
+            placeTile(newBoard, currentPlayer, i);
             int newScore = 0;
 
             if (hasMovesLeft(newBoard, opponent(currentPlayer))) { //Opponent can move next
-                newScore = minChoice(opponent(currentPlayer), newBoard, recursionLimit, alpha, beta);
+                newScore = minChoice(currentPlayer, newBoard, recursionLimit, alpha, beta);
             } else if (hasMovesLeft(newBoard, currentPlayer)) { //Computer can move next
                 newScore = maxChoice(currentPlayer, newBoard, recursionLimit, alpha, beta);
             } else { //No one can move next, therefore no further analysis can be made
@@ -469,19 +470,21 @@ int maxChoice(int player, int* board, int depth, int alpha, int beta) {
     //return max
 
     int max = INT_MIN;
+    bool pruned = false;
 
     if (depth <= 0) {
         max = heuristicEvaluation(board, player);
     } else {
         int newScore = 0;
 
-        for (int i = 0; i < ROWS * COLUMNS; i++) {
+        for (int i = 0; i < ROWS * COLUMNS && !pruned; i++) {
             if (isValidMove(board, player, i)) {
                 int* newBoard = copyBoard(board);
+                placeTile(newBoard, player, i);
 
                 if (hasMovesLeft(newBoard, opponent(player))) { //Opponent can move next
-                    newScore = minChoice(opponent(player), newBoard, depth - 1, alpha, beta);
-                } else if (hasMovesLeft(newBoard, player)) { //Computer can move next
+                    newScore = minChoice(player, newBoard, depth - 1, alpha, beta);
+                } else if (hasMovesLeft(newBoard, player)) { //Player can move next
                     newScore = maxChoice(player, newBoard, depth - 1, alpha, beta);
                 } else { //No one can move next, therefore no further analysis can be made
                     newScore = differenceEvaluation(board, player);
@@ -489,6 +492,12 @@ int maxChoice(int player, int* board, int depth, int alpha, int beta) {
 
                 if (newScore > max) {
                     max = newScore;
+                }
+
+                if (newScore >= beta) {
+                    pruned = true;
+                } else if (newScore > alpha) {
+                    alpha = newScore;
                 }
 
             }
@@ -523,26 +532,34 @@ int minChoice(int player, int* board, int depth, int alpha, int beta) {
     //return min
 
     int min = INT_MAX;
+    bool pruned = false;
 
     if (depth <= 0) {
         min = heuristicEvaluation(board, player);
     } else {
         int newScore = 0;
 
-        for (int i = 0; i < ROWS * COLUMNS; i++) {
-            if (isValidMove(board, player, i)) {
+        for (int i = 0; i < ROWS * COLUMNS && !pruned; i++) {
+            if (isValidMove(board, opponent(player), i)) {
                 int* newBoard = copyBoard(board);
+                placeTile(newBoard, opponent(player), i);
 
-                if (hasMovesLeft(newBoard, opponent(player))) { //Opponent can move next
-                    newScore = minChoice(opponent(player), newBoard, depth - 1, alpha, beta);
-                } else if (hasMovesLeft(newBoard, player)) { //Computer can move next
+                if (hasMovesLeft(newBoard, player)) { //Player can move next
                     newScore = maxChoice(player, newBoard, depth - 1, alpha, beta);
+                } else if (hasMovesLeft(newBoard, opponent(player))) { //Opponent can move next
+                    newScore = minChoice(player, newBoard, depth - 1, alpha, beta);
                 } else { //No one can move next, therefore no further analysis can be made
                     newScore = differenceEvaluation(board, player);
                 }
 
                 if (newScore < min) {
                     min = newScore;
+                }
+
+                if (newScore <= alpha) {
+                    pruned = true;
+                } else if (newScore < beta) {
+                    beta = newScore;
                 }
 
             }
