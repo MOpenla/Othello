@@ -150,10 +150,11 @@ void playGame(int* board) {
 
     int currentPlayer = BLACK;
 
-    while (hasMovesLeft(board, currentPlayer) || hasMovesLeft(board, opponent(currentPlayer))) {
+    while (hasMovesLeft(board, currentPlayer) || hasMovesLeft(board, opponent(currentPlayer))) { //Loop while there are still moves left
         if (currentPlayer == BLACK) { //Human is current player
+            cout << "----------" << playerName << "'s turn" << "----------" << endl << endl;
+
             if (hasMovesLeft(board, currentPlayer)) { //Human has moves left
-                cout << "----------" << playerName << "'s turn" << "----------" << endl << endl;
                 displayStats(board);
 
                 cout << endl << endl;
@@ -161,20 +162,18 @@ void playGame(int* board) {
                 int rowIndex = 0;
                 int columnIndex = 0;
 
-                cout << "Row Index: ";
+                cout << "X Index: ";
                 cin >> rowIndex;
-                cout << "Column Index: ";
+                cout << "Y Index: ";
                 cin >> columnIndex;
 
-                cout << endl;
-
-                while (!isValidMove(board, currentPlayer, rowIndex, columnIndex)) {
+                while (!isValidMove(board, currentPlayer, rowIndex, columnIndex)) { //Make sure a valid move is retrieved from the player
                     cout << "Sorry, that move is not valid." << endl;
                     cout << "Please try again." << endl << endl;
 
-                    cout << "Row Index: ";
+                    cout << "X Index: ";
                     cin >> rowIndex;
-                    cout << "Column Index: ";
+                    cout << "Y Index: ";
                     cin >> columnIndex;
                 }
 
@@ -183,21 +182,26 @@ void playGame(int* board) {
             } else { //Human has no moves
                 cout << playerName << " has no available moves." << endl;
             }
+
+            cout << endl;
         }
 
         if (currentPlayer == WHITE) { //Computer is current player
+            cout << "----------" << computerName << "'s turn" << "----------" << endl << endl;
+
             if (hasMovesLeft(board, currentPlayer)) { //Computer has moves left
-                cout << "----------" << computerName << "'s turn" << "----------" << endl << endl;
                 displayStats(board);
                 cout << endl << endl;
 
                 int bestMove = findBestMove(board, currentPlayer);
                 placeTile(board, currentPlayer, bestMove);
 
-                cout << computerName << " placed a tile at " << (bestMove % 8) << ", " << (bestMove / 8) << "." << endl << endl;
+                cout << computerName << " placed a tile at " << (bestMove % 8) << ", " << (bestMove / 8) << "." << endl;
             } else { //Computer has no moves left
                 cout << computerName << " has no available moves." << endl;
             }
+
+            cout << endl;
         }
 
         currentPlayer = opponent(currentPlayer);
@@ -646,12 +650,12 @@ bool hasRightTrain(int* board, int player, int pos) {
     bool valid = false;
 
     int rightPos = pos + 1;
-    if (pos % ROWS != ROWS && board[rightPos] == opponent(player)) {
-        while (rightPos % ROWS != ROWS && board[rightPos + 1] == opponent(player)) {
+    if (pos % ROWS != ROWS - 1 && board[rightPos] == opponent(player)) {
+        while (rightPos % ROWS != ROWS - 1 && board[rightPos + 1] == opponent(player)) {
             rightPos++;
         }
 
-        valid = rightPos % ROWS != ROWS && board[rightPos + 1] == player;
+        valid = rightPos % ROWS != ROWS - 1 && board[rightPos + 1] == player;
     }
 
     return valid;
@@ -661,12 +665,12 @@ bool hasBottomTrain(int* board, int player, int pos) {
     bool valid = false;
 
     int downPos = pos + ROWS;
-    if (pos / COLUMNS != COLUMNS && board[downPos] == opponent(player)) {
-        while (downPos / COLUMNS != COLUMNS && board[downPos + ROWS] == opponent(player)) {
+    if (pos / COLUMNS != COLUMNS - 1 && board[downPos] == opponent(player)) {
+        while (downPos / COLUMNS != COLUMNS - 1 && board[downPos + ROWS] == opponent(player)) {
             downPos += ROWS;
         }
 
-        valid = downPos / COLUMNS != COLUMNS && board[downPos + ROWS] == player;
+        valid = downPos / COLUMNS != COLUMNS - 1 && board[downPos + ROWS] == player;
     }
 
     return valid;
@@ -691,12 +695,12 @@ bool hasTopRightTrain(int* board, int player, int pos) {
     bool valid = false;
 
     int topRightPos = pos - (ROWS - 1);
-    if (pos / COLUMNS != 0 && pos % ROWS != ROWS && board[topRightPos] == opponent(player)) {
-        while (topRightPos / COLUMNS != 0 && topRightPos % ROWS != ROWS && board[topRightPos - (ROWS - 1)] == opponent(player)) {
+    if (pos / COLUMNS != 0 && pos % ROWS != ROWS - 1 && board[topRightPos] == opponent(player)) {
+        while (topRightPos / COLUMNS != 0 && topRightPos % ROWS != ROWS - 1 && board[topRightPos - (ROWS - 1)] == opponent(player)) {
             topRightPos -= ROWS - 1;
         }
 
-        valid = topRightPos / COLUMNS != 0 && topRightPos % ROWS != ROWS && board[topRightPos - (ROWS - 1)] == player;
+        valid = topRightPos / COLUMNS != 0 && topRightPos % ROWS != ROWS - 1 && board[topRightPos - (ROWS - 1)] == player;
     }
 
     return valid;
@@ -706,12 +710,12 @@ bool hasBottomLeftTrain(int* board, int player, int pos) {
     bool valid = false;
 
     int bottomLeftPos = pos + (ROWS - 1);
-    if (pos / COLUMNS != COLUMNS && pos % ROWS != 0 && board[bottomLeftPos] == opponent(player)) {
-        while (bottomLeftPos / COLUMNS != COLUMNS && bottomLeftPos % ROWS != 0 && board[bottomLeftPos + (ROWS - 1)] == opponent(player)) {
+    if (pos / COLUMNS != COLUMNS - 1 && pos % ROWS != 0 && board[bottomLeftPos] == opponent(player)) {
+        while (bottomLeftPos / COLUMNS != COLUMNS - 1 && bottomLeftPos % ROWS != 0 && board[bottomLeftPos + (ROWS - 1)] == opponent(player)) {
             bottomLeftPos += ROWS - 1;
         }
 
-        valid = bottomLeftPos / COLUMNS != COLUMNS && bottomLeftPos % ROWS != 0 && board[bottomLeftPos + (ROWS - 1)] == player;
+        valid = bottomLeftPos / COLUMNS != COLUMNS - 1 && bottomLeftPos % ROWS != 0 && board[bottomLeftPos + (ROWS - 1)] == player;
     }
 
     return valid;
@@ -721,12 +725,12 @@ bool hasBottomRightTrain(int* board, int player, int pos) {
     bool valid = false;
 
     int bottomRightPos = pos + (ROWS + 1);
-    if (pos / COLUMNS != COLUMNS && pos % ROWS != ROWS && board[bottomRightPos] == opponent(player)) {
-        while (bottomRightPos / COLUMNS != COLUMNS && bottomRightPos % ROWS != ROWS && board[bottomRightPos + (ROWS + 1)] == opponent(player)) {
+    if (pos / COLUMNS != COLUMNS - 1 && pos % ROWS != ROWS - 1 && board[bottomRightPos] == opponent(player)) {
+        while (bottomRightPos / COLUMNS != COLUMNS - 1 && bottomRightPos % ROWS != ROWS - 1 && board[bottomRightPos + (ROWS + 1)] == opponent(player)) {
             bottomRightPos += ROWS + 1;
         }
 
-        valid = bottomRightPos / COLUMNS != COLUMNS && bottomRightPos % ROWS != ROWS && board[bottomRightPos + (ROWS + 1)] == player;
+        valid = bottomRightPos / COLUMNS != COLUMNS - 1 && bottomRightPos % ROWS != ROWS - 1 && board[bottomRightPos + (ROWS + 1)] == player;
     }
 
     return valid;
