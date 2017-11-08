@@ -136,13 +136,14 @@ int main(int argc, char **argv) {
     //Greet the player and lay down some base rules
     cout << "Greetings " << playerName << ". My name is " << computerName << "." << endl;
     cout << "Today we will be playing Othello. I hope you know the rules." << endl;
-    cout << "You will play as Black and I will play as White." << endl;
+    cout << "You will play as Black (X) and I will play as White (O)." << endl;
     cout << "Let's get started." << endl << endl;
 
     currentBoard = copyBoard(initialValues);
 
-    //init_setup(WINDOW_X, WINDOW_Y, WINDOW_NAME);
-    //glutMainLoop();
+    //Comment out these two lines to play a terminal game
+    init_setup(WINDOW_X, WINDOW_Y, WINDOW_NAME);
+    glutMainLoop();
 
     playGame(currentBoard);
 
@@ -298,9 +299,9 @@ void displayStats(int* board) {
         char output = '-';
 
         if (board[i] == -1) {
-            output = 'W';
+            output = 'X';
         } else if (board[i] == 1) {
-            output = 'B';
+            output = 'O';
         }
 
         cout << output << "  ";
