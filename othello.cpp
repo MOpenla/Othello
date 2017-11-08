@@ -822,7 +822,7 @@ void onPaint(void) {
     glClear(GL_COLOR_BUFFER_BIT); //clear the colour from the buffer
 
     //Draw the score area
-    glColor3f(0.0, 0.25, 0.0); //Dark green
+    glColor3f(0.18, 0.49, 0.20); //Dark green
     glBegin(GL_POLYGON);
         glVertex2i(WINDOW_X - SCORE_AREA_X, 0);
         glVertex2i(WINDOW_X - SCORE_AREA_X, WINDOW_Y);
@@ -831,7 +831,7 @@ void onPaint(void) {
     glEnd();
 
     //Draw the Score
-    glColor3f(0.75, 0.0, 0.0); //Dark-ish red
+    glColor3f(1.0, 1.0, 1.0); //Dark-ish red
     //output(25, 360, 1, "CS4200/5200: 8 Puzzle");
     //output(50, 320, 2, "Mitchell D. Openlander");
 
