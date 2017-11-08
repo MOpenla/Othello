@@ -862,7 +862,7 @@ void onPaint(void) {
             float posX = (row * divisionX) + (divisionX / 2);
             float posY = (column * divisionY) + (divisionY / 2);
 
-            drawPiece(posX, posY, (divisionX / 2) - 10, 20, currentBoard[i]);
+            drawPiece(posX, WINDOW_Y - posY, (divisionX / 2) - 10, 20, currentBoard[i]);
         }
     }
 
@@ -911,10 +911,32 @@ void onKeyPress(unsigned char c, int x, int y) {
 }
 
 void onMouseMove(int x, int y) {
-    glutPostRedisplay();
+    //glutPostRedisplay();
 }
 
 void onMouseButton(int button, int state, int x, int y) {
+    if (button == GLUT_LEFT_BUTTON && state == GLUT_UP) {
+        int gameSection_X = WINDOW_X - SCORE_AREA_X;
+        int divisionX = gameSection_X / ROWS;
+        int divisionY = WINDOW_Y / COLUMNS;
+
+        int row = x / divisionX;
+        int column = y / divisionY;
+
+        int pos = row + (ROWS * column);
+
+        if (isValidMove(currentBoard, BLACK, pos)) {
+            placeTile(currentBoard, BLACK, pos);
+
+            glutPostRedisplay();
+
+            int bestMove = findBestMove(currentBoard, WHITE);
+            placeTile(currentBoard, WHITE, bestMove);
+
+            glutPostRedisplay();
+        }
+    }
+
     glutPostRedisplay();
 }
 
