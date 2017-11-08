@@ -8,6 +8,9 @@
  * //TODO general method used and whatnot
  ******************************************************************************/
 
+//TO COMPILE:
+// $ g++ othello.cpp aStarTree.cpp -lglut -lGL -lGLU
+
 /*
 
 //   0  1  2  3  4  5  6  7  Row Index
@@ -837,7 +840,7 @@ void onPaint(void) {
     output(WINDOW_X - 50, WINDOW_Y - 100, 2, to_string(score(currentBoard, BLACK)).c_str());
     output(WINDOW_X - SCORE_AREA_X + 20, WINDOW_Y - 125, 2, (computerName + ":").c_str());
     output(WINDOW_X - 50, WINDOW_Y - 125, 2, to_string(score(currentBoard, WHITE)).c_str());
-    //output(50, 320, 2, "Mitchell D. Openlander");
+    //TODO print current player at the bottom of the score pane
 
     //Draw the Gridlines
     int gameSection_X = WINDOW_X - SCORE_AREA_X;
@@ -979,13 +982,23 @@ void onMouseButton(int button, int state, int x, int y) {
             placeTile(currentBoard, BLACK, pos);
             glutPostRedisplay();
 
-            int bestMove = findBestMove(currentBoard, WHITE);
-            placeTile(currentBoard, WHITE, bestMove);
-            glutPostRedisplay();
+            if (hasMovesLeft(currentBoard, WHITE)) {
+                int bestMove = findBestMove(currentBoard, WHITE);
+                placeTile(currentBoard, WHITE, bestMove);
+                glutPostRedisplay();
+
+                while (!hasMovesLeft(currentBoard, BLACK) && hasMovesLeft(currentBoard, WHITE)) {
+                    bestMove = findBestMove(currentBoard, WHITE);
+                    placeTile(currentBoard, WHITE, bestMove);
+                    glutPostRedisplay();
+                }
+            }
+            
+            if (!hasMovesLeft(currentBoard, BLACK) && !hasMovesLeft(currentBoard, WHITE)) { //Neither player has moves left. game over
+                exit(0);
+            }
         }
     }
-
-    glutPostRedisplay();
 }
 
 void doAnimation(int val) {
