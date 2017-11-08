@@ -832,7 +832,7 @@ void onPaint(void) {
 
     //Draw the Score
     glColor3f(1.0, 1.0, 1.0); //Dark-ish red
-    //output(25, 360, 1, "CS4200/5200: 8 Puzzle");
+    output(WINDOW_X - SCORE_AREA_X + 10, 100, 1, "CS4200/5200: 8 Puzzle");
     //output(50, 320, 2, "Mitchell D. Openlander");
 
     //Draw the Gridlines
@@ -986,4 +986,19 @@ void onMouseButton(int button, int state, int x, int y) {
 
 void doAnimation(int val) {
 
+}
+
+void output(int x, int y, int mode, string string) {
+    int length;
+    glRasterPos2i(x, y);
+    length = (int)strlen(string);
+    void* font = GLUT_BITMAP_TIMES_ROMAN_24;
+
+    if (mode == 2) {
+        font = GLUT_BITMAP_HELVETICA_18;
+    }
+
+    for (int i = 0; i < length; i++) {
+        glutBitmapCharacter(font, string[i]);
+    }
 }
