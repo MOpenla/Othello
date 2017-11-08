@@ -141,8 +141,8 @@ int main(int argc, char **argv) {
 
     currentBoard = copyBoard(initialValues);
 
-    init_setup(WINDOW_X, WINDOW_Y, WINDOW_NAME);
-    glutMainLoop();
+    //init_setup(WINDOW_X, WINDOW_Y, WINDOW_NAME);
+    //glutMainLoop();
 
     playGame(currentBoard);
 
