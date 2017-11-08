@@ -43,6 +43,7 @@ Columns are horizontal
 
 #include <GL/glut.h>
 #include <math.h> //for drawing circle calculation
+#include <unistd.h> //sleep()
 
 using namespace std;
 
@@ -93,6 +94,7 @@ const int SCORE_AREA_X = 200; //This is from the right side of the display
 const char* WINDOW_NAME = "Othello";
 const int ANI_MSEC = 10; //gap between frames
 int* currentBoard;
+int mousePos;
 
 const int heuristicValues[ROWS * COLUMNS] = {
     1000, 50, 100, 100, 100, 100, 50, 1000,
@@ -816,7 +818,7 @@ void reshape_handler(int width, int height) {
 }
 
 void onPaint(void) {
-    glClearColor(1.0, 1.0, 1.0, 1.0); //background colour white
+    glClearColor(0.96, 0.96, 0.96, 1.0); //background colour light gray
     glClear(GL_COLOR_BUFFER_BIT); //clear the colour from the buffer
 
     //Draw the score area
@@ -866,6 +868,37 @@ void onPaint(void) {
         }
     }
 
+    //Draw outline around current cell
+    if (mousePos >= 0) {
+        int row = mousePos % COLUMNS;
+        int column = mousePos / ROWS;
+
+        int posX = (row * divisionX);
+        int posY = WINDOW_Y - (column * divisionY);
+
+        if (isValidMove(currentBoard, BLACK, mousePos)) {
+            glColor3f(0.0, 1.0, 0.0); //green
+        } else {
+            glColor3f(1.0, 0.0, 0.0); //red
+        }
+
+        glLineWidth(4.0);
+        glBegin(GL_LINES);
+            glVertex2i(posX, posY);
+            glVertex2i(posX + divisionX, posY);
+
+            glVertex2i(posX + divisionX, posY);
+            glVertex2i(posX + divisionX, posY - divisionY);
+
+            glVertex2i(posX + divisionX, posY - divisionY);
+            glVertex2i(posX, posY - divisionY);
+
+            glVertex2i(posX, posY - divisionY);
+            glVertex2i(posX, posY);
+        glEnd();
+        glLineWidth(1.0);
+    }
+
     glFlush();
     glutSwapBuffers(); //double buffering
 }
@@ -911,7 +944,21 @@ void onKeyPress(unsigned char c, int x, int y) {
 }
 
 void onMouseMove(int x, int y) {
-    //glutPostRedisplay();
+    if (x < WINDOW_X - SCORE_AREA_X) { //Mouse is within game area
+        int gameSection_X = WINDOW_X - SCORE_AREA_X;
+        int divisionX = gameSection_X / ROWS;
+        int divisionY = WINDOW_Y / COLUMNS;
+
+        int row = x / divisionX;
+        int column = y / divisionY;
+        int pos = row + (ROWS * column);
+
+        mousePos = pos;
+    } else {
+        mousePos = -1;
+    }
+
+    glutPostRedisplay();
 }
 
 void onMouseButton(int button, int state, int x, int y) {
@@ -922,17 +969,14 @@ void onMouseButton(int button, int state, int x, int y) {
 
         int row = x / divisionX;
         int column = y / divisionY;
-
         int pos = row + (ROWS * column);
 
         if (isValidMove(currentBoard, BLACK, pos)) {
             placeTile(currentBoard, BLACK, pos);
-
             glutPostRedisplay();
 
             int bestMove = findBestMove(currentBoard, WHITE);
             placeTile(currentBoard, WHITE, bestMove);
-
             glutPostRedisplay();
         }
     }
