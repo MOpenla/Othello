@@ -42,6 +42,7 @@ Columns are horizontal
 #include <climits> //max and min int
 
 #include <GL/glut.h>
+#include <math.h> //for drawing circle calculation
 
 using namespace std;
 
@@ -73,10 +74,12 @@ bool hasBottomRightTrain(int*, int, int);
 void reshape_handler(int, int);
 void init_setup(int, int, const char*);
 void onPaint(void);
+void drawPiece(float, float, float, int, int);
 void doAnimation(int);
 void output(int, int, int, const string);
 void onKeyPress(unsigned char, int, int);
-void onMouse(int, int, int, int);
+void onMouseMove(int, int);
+void onMouseButton(int, int, int, int);
 
 //Global Variables
 const int ROWS = 8;
@@ -89,6 +92,7 @@ const int WINDOW_Y = 512;
 const int SCORE_AREA_X = 200; //This is from the right side of the display
 const char* WINDOW_NAME = "Othello";
 const int ANI_MSEC = 10; //gap between frames
+int* currentBoard;
 
 const int heuristicValues[ROWS * COLUMNS] = {
     1000, 50, 100, 100, 100, 100, 50, 1000,
@@ -131,10 +135,12 @@ int main(int argc, char **argv) {
     cout << "You will play as Black and I will play as White." << endl;
     cout << "Let's get started." << endl << endl;
 
+    currentBoard = copyBoard(initialValues);
+
     init_setup(WINDOW_X, WINDOW_Y, WINDOW_NAME);
     glutMainLoop();
 
-    playGame(copyBoard(initialValues));
+    playGame(currentBoard);
 
     char again;
     cout << endl << "Would you like to play again (y for yes)? ";
@@ -796,7 +802,8 @@ void init_setup(int width, int height, const char* windowName) {
 
     glutDisplayFunc(onPaint);
     glutKeyboardFunc(onKeyPress);
-    glutMouseFunc(onMouse);
+    glutPassiveMotionFunc(onMouseMove);
+    glutMouseFunc(onMouseButton);
     //glutSpecialFunc(onSpecialKeyPress);
     glutTimerFunc(ANI_MSEC, doAnimation, 0);
 }
@@ -847,9 +854,54 @@ void onPaint(void) {
     glEnd();
 
     //Draw the Pieces
+    for (int i = 0; i < ROWS * COLUMNS; i++) {
+        if (currentBoard[i] != 0) { //Cell is not empty
+            int row = i % COLUMNS;
+            int column = i / ROWS;
+
+            float posX = (row * divisionX) + (divisionX / 2);
+            float posY = (column * divisionY) + (divisionY / 2);
+
+            drawPiece(posX, posY, (divisionX / 2) - 10, 20, currentBoard[i]);
+        }
+    }
 
     glFlush();
     glutSwapBuffers(); //double buffering
+}
+
+void drawPiece(float cx, float cy, float r, int num_segments, int player) {
+    if (player == WHITE) {
+        glColor3f(1.0, 1.0, 1.0);
+    } else if (player == BLACK) {
+        glColor3f(0.0, 0.0, 0.0);
+    }
+
+    glBegin(GL_TRIANGLE_FAN);
+    for(int i = 0; i < num_segments; i++) {
+        float theta = 2.0f * 3.1415926f * float(i) / float(num_segments);//get the current angle
+
+        float x = r * cosf(theta);//calculate the x component
+        float y = r * sinf(theta);//calculate the y component
+
+        glVertex2f(x + cx, y + cy);//output vertex
+
+    }
+    glEnd();
+
+    //Draw circle outline
+    glColor3f(0.0, 0.0, 0.0); //set pen colour to black
+    glBegin(GL_LINE_LOOP);
+    for(int i = 0; i < num_segments; i++) {
+        float theta = 2.0f * 3.1415926f * float(i) / float(num_segments);//get the current angle
+
+        float x = r * cosf(theta);//calculate the x component
+        float y = r * sinf(theta);//calculate the y component
+
+        glVertex2f(x + cx, y + cy);//output vertex
+
+    }
+    glEnd();
 }
 
 void onKeyPress(unsigned char c, int x, int y) {
@@ -858,8 +910,12 @@ void onKeyPress(unsigned char c, int x, int y) {
     }
 }
 
-void onMouse(int button, int state, int x, int y) {
+void onMouseMove(int x, int y) {
+    glutPostRedisplay();
+}
 
+void onMouseButton(int button, int state, int x, int y) {
+    glutPostRedisplay();
 }
 
 void doAnimation(int val) {
