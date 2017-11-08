@@ -38,12 +38,11 @@ Columns are horizontal
 //Black goes first
 
 #include <iostream>
-#include <string>
+#include <string.h>
 #include <climits> //max and min int
 
 #include <GL/glut.h>
 #include <math.h> //for drawing circle calculation
-#include <unistd.h> //sleep()
 
 using namespace std;
 
@@ -77,7 +76,7 @@ void init_setup(int, int, const char*);
 void onPaint(void);
 void drawPiece(float, float, float, int, int);
 void doAnimation(int);
-void output(int, int, int, const string);
+void output(int, int, int, const char*);
 void onKeyPress(unsigned char, int, int);
 void onMouseMove(int, int);
 void onMouseButton(int, int, int, int);
@@ -832,7 +831,12 @@ void onPaint(void) {
 
     //Draw the Score
     glColor3f(1.0, 1.0, 1.0); //Dark-ish red
-    output(WINDOW_X - SCORE_AREA_X + 10, 100, 1, "CS4200/5200: 8 Puzzle");
+    output(WINDOW_X - SCORE_AREA_X + 60, WINDOW_Y - 25, 1, "Othello");
+    output(WINDOW_X - SCORE_AREA_X + 10, WINDOW_Y - 75, 2, "Score");
+    output(WINDOW_X - SCORE_AREA_X + 20, WINDOW_Y - 100, 2, (playerName + ":").c_str());
+    output(WINDOW_X - 50, WINDOW_Y - 100, 2, to_string(score(currentBoard, BLACK)).c_str());
+    output(WINDOW_X - SCORE_AREA_X + 20, WINDOW_Y - 125, 2, (computerName + ":").c_str());
+    output(WINDOW_X - 50, WINDOW_Y - 125, 2, to_string(score(currentBoard, WHITE)).c_str());
     //output(50, 320, 2, "Mitchell D. Openlander");
 
     //Draw the Gridlines
@@ -988,7 +992,7 @@ void doAnimation(int val) {
 
 }
 
-void output(int x, int y, int mode, string string) {
+void output(int x, int y, int mode, const char* string) {
     int length;
     glRasterPos2i(x, y);
     length = (int)strlen(string);
