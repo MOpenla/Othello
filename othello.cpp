@@ -41,6 +41,8 @@ Columns are horizontal
 #include <string>
 #include <climits> //max and min int
 
+#include <GL/glut.h>
+
 using namespace std;
 
 //Function Prototypes
@@ -68,11 +70,25 @@ bool hasTopRightTrain(int*, int, int);
 bool hasBottomLeftTrain(int*, int, int);
 bool hasBottomRightTrain(int*, int, int);
 
+void reshape_handler(int, int);
+void init_setup(int, int, const char*);
+void onPaint(void);
+void doAnimation(int);
+void output(int, int, int, const string);
+void onKeyPress(unsigned char, int, int);
+void onMouse(int, int, int, int);
+
 //Global Variables
 const int ROWS = 8;
 const int COLUMNS = 8;
 const int BLACK = 1; //human player
 const int WHITE = -1; //computer player
+
+const int WINDOW_X = 712;
+const int WINDOW_Y = 512;
+const int SCORE_AREA_X = 200; //This is from the right side of the display
+const char* WINDOW_NAME = "Othello";
+const int ANI_MSEC = 10; //gap between frames
 
 const int heuristicValues[ROWS * COLUMNS] = {
     1000, 50, 100, 100, 100, 100, 50, 1000,
@@ -99,7 +115,9 @@ int initialValues[ROWS * COLUMNS] = {
 string playerName;
 const string computerName = "Othello 9001";
 
-int main() {
+int main(int argc, char **argv) {
+    glutInit(&argc, argv);
+
     //Welcome the player and get their name for a more personalized experience
     cout << "Hello and Welcome to the Othello game." << endl << endl;
     cout << "Please enter your name: ";
@@ -112,6 +130,9 @@ int main() {
     cout << "Today we will be playing Othello. I hope you know the rules." << endl;
     cout << "You will play as Black and I will play as White." << endl;
     cout << "Let's get started." << endl << endl;
+
+    init_setup(WINDOW_X, WINDOW_Y, WINDOW_NAME);
+    glutMainLoop();
 
     playGame(copyBoard(initialValues));
 
@@ -751,4 +772,96 @@ bool hasBottomRightTrain(int* board, int player, int pos) {
     }
 
     return valid;
+}
+
+
+
+
+
+
+
+
+
+/*
+ * GLUT Functions
+ */
+
+void init_setup(int width, int height, const char* windowName) {
+    //Glut Init
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB); //single buffer, rgb colour
+    glutInitWindowSize(width, height); //init window size
+    glutInitWindowPosition(5, 5); //init window position
+    glutCreateWindow((char*)windowName); //set the window's name
+    glutReshapeFunc(reshape_handler); //set the reshape call back
+
+    glutDisplayFunc(onPaint);
+    glutKeyboardFunc(onKeyPress);
+    glutMouseFunc(onMouse);
+    //glutSpecialFunc(onSpecialKeyPress);
+    glutTimerFunc(ANI_MSEC, doAnimation, 0);
+}
+
+void reshape_handler(int width, int height) {
+    glViewport(0, 0, width, height); //set viewpoint
+    glMatrixMode(GL_PROJECTION); //projection matrix
+    glLoadIdentity(); //loads identity matrix
+    gluOrtho2D(0.0, (GLdouble)width, 0.0, (GLdouble)height); //2D orthographic projection
+}
+
+void onPaint(void) {
+    glClearColor(1.0, 1.0, 1.0, 1.0); //background colour white
+    glClear(GL_COLOR_BUFFER_BIT); //clear the colour from the buffer
+
+    //Draw the score area
+    glColor3f(0.0, 0.25, 0.0); //Dark green
+    glBegin(GL_POLYGON);
+        glVertex2i(WINDOW_X - SCORE_AREA_X, 0);
+        glVertex2i(WINDOW_X - SCORE_AREA_X, WINDOW_Y);
+        glVertex2i(WINDOW_X, WINDOW_Y);
+        glVertex2i(WINDOW_X, 0);
+    glEnd();
+
+    //Draw the Score
+    glColor3f(0.75, 0.0, 0.0); //Dark-ish red
+    //output(25, 360, 1, "CS4200/5200: 8 Puzzle");
+    //output(50, 320, 2, "Mitchell D. Openlander");
+
+    //Draw the Gridlines
+    int gameSection_X = WINDOW_X - SCORE_AREA_X;
+    int divisionX = gameSection_X / ROWS;
+    int divisionY = WINDOW_Y / COLUMNS;
+
+    glColor3f(0.0, 0.0, 0.0); //set pen colour to black
+    glBegin(GL_LINES);
+        //Vertical lines
+        for (int i = divisionX; i < gameSection_X; i += divisionX) {
+            glVertex2i(i, 0);
+            glVertex2i(i, WINDOW_Y);
+        }
+
+        //Horizontal lines
+        for (int i = divisionY; i < WINDOW_Y; i += divisionY) {
+            glVertex2i(0, i);
+            glVertex2i(gameSection_X, i);
+        }
+    glEnd();
+
+    //Draw the Pieces
+
+    glFlush();
+    glutSwapBuffers(); //double buffering
+}
+
+void onKeyPress(unsigned char c, int x, int y) {
+    if (c == 'q') { //Quit the program
+        exit(0);
+    }
+}
+
+void onMouse(int button, int state, int x, int y) {
+
+}
+
+void doAnimation(int val) {
+
 }
