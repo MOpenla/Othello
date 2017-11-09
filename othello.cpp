@@ -82,9 +82,12 @@ bool hasTopRightTrain(int*, int, int);
 bool hasBottomLeftTrain(int*, int, int);
 bool hasBottomRightTrain(int*, int, int);
 
+// GLUT Functions
 void reshape_handler(int, int);
 void init_setup(int, int, const char*);
 void onPaint(void);
+void drawFinalScore();
+void drawBoard();
 void drawPiece(float, float, float, int, int);
 void doAnimation(int);
 void output(int, int, int, const char*);
@@ -99,14 +102,6 @@ const int BLACK   =  1; //human player
 const int WHITE   = -1; //computer player
 const string computerName = "Othello 9001";
 string playerName;
-
-const int WINDOW_X = 712;
-const int WINDOW_Y = 512;
-const int SCORE_AREA_X = 200; //This is from the right side of the display
-const char* WINDOW_NAME = "Othello";
-const int ANI_MSEC = 10; //gap between frames
-int* currentBoard;
-int mousePos;
 
 const int heuristicValues[ROWS * COLUMNS] = {
     1000, 50, 100, 100, 100, 100,  50, 1000,
@@ -129,6 +124,15 @@ int initialValues[ROWS * COLUMNS] = {
     0,  0,  0,  0,  0,  0,  0,  0,
     0,  0,  0,  0,  0,  0,  0,  0
 };
+
+// GLUT variables
+const int WINDOW_X = 712;
+const int WINDOW_Y = 512;
+const int SCORE_AREA_X = 200; //This is from the right side of the display
+const char* WINDOW_NAME = "Othello";
+const int ANI_MSEC = 10; //gap between frames
+int* currentBoard;
+int mousePos;
 
 
 int main(int argc, char **argv) {
@@ -899,6 +903,8 @@ bool hasBottomRightTrain(int* board, int player, int pos) {
  * GLUT Functions
  */
 
+bool endOfGame;
+
 void init_setup(int width, int height, const char* windowName) {
     //Glut Init
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB); //single buffer, rgb colour
@@ -913,6 +919,8 @@ void init_setup(int width, int height, const char* windowName) {
     glutMouseFunc(onMouseButton);
     //glutSpecialFunc(onSpecialKeyPress);
     glutTimerFunc(ANI_MSEC, doAnimation, 0);
+
+    endOfGame = true;
 }
 
 void reshape_handler(int width, int height) {
@@ -923,6 +931,54 @@ void reshape_handler(int width, int height) {
 }
 
 void onPaint(void) {
+    if (endOfGame) {
+        drawFinalScore();
+    } else {
+        drawBoard();
+    }
+
+
+    glFlush();
+    glutSwapBuffers(); //double buffering
+}
+
+void drawFinalScore() {
+    int humanScore = score(currentBoard, BLACK);
+    int computerScore = score(currentBoard, WHITE);
+    string winnerString;
+    string messageString;
+
+    if (humanScore > computerScore) { //Human Wins
+        glClearColor(1.00, 0.32, 0.32, 1.00); //red to signify loss
+        glClear(GL_COLOR_BUFFER_BIT); //clear the colour from the buffer
+
+        winnerString = playerName + " wins!";
+        messageString = "Congradulations! I didn't think you had it in you!";
+    } else if (computerScore > humanScore) { //Computer Wins
+        glClearColor(0.65, 0.84, 0.65, 1.00); //green to signify win
+        glClear(GL_COLOR_BUFFER_BIT); //clear the colour from the buffer
+
+        winnerString = computerName + " wins.";
+        messageString = "We can't all be winners.    Better luck next time.";
+    } else { //Tie Game
+        glClearColor(0.96, 0.96, 0.96, 1.0); //gray for neutrality
+        glClear(GL_COLOR_BUFFER_BIT); //clear the colour from the buffer
+
+        winnerString = "Tie game";
+        messageString = "              Better luck next time.              ";
+    }
+
+    //Display output messages
+    glColor3f(0.0, 0.0, 0.0); //black
+    output(200, WINDOW_Y - 25, 1, winnerString.c_str());
+    output(200, WINDOW_Y - 50, 2, messageString.c_str());
+
+    //Display final scores
+
+    //Display buttons
+}
+
+void drawBoard() {
     glClearColor(0.96, 0.96, 0.96, 1.0); //background colour light gray
     glClear(GL_COLOR_BUFFER_BIT); //clear the colour from the buffer
 
@@ -936,7 +992,7 @@ void onPaint(void) {
     glEnd();
 
     //Draw the Score
-    glColor3f(1.0, 1.0, 1.0); //Dark-ish red
+    glColor3f(1.0, 1.0, 1.0); //white
     output(WINDOW_X - SCORE_AREA_X + 60, WINDOW_Y - 25, 1, "Othello");
     output(WINDOW_X - SCORE_AREA_X + 10, WINDOW_Y - 75, 2, "Score");
     output(WINDOW_X - SCORE_AREA_X + 20, WINDOW_Y - 100, 2, (playerName + ":").c_str());
@@ -1008,9 +1064,6 @@ void onPaint(void) {
         glEnd();
         glLineWidth(1.0);
     }
-
-    glFlush();
-    glutSwapBuffers(); //double buffering
 }
 
 void drawPiece(float cx, float cy, float r, int num_segments, int player) {
@@ -1098,7 +1151,7 @@ void onMouseButton(int button, int state, int x, int y) {
             }
             
             if (!hasMovesLeft(currentBoard, BLACK) && !hasMovesLeft(currentBoard, WHITE)) { //Neither player has moves left. game over
-                exit(0);
+                endOfGame = true;
             }
         }
     }
