@@ -64,6 +64,7 @@ int heuristicEvaluation(int*, int);
 int differenceEvaluation(int*, int);
 int score(int*, int);
 int* copyBoard(int*);
+
 bool hasTopTrain(int*, int, int);
 bool hasLeftTrain(int*, int, int);
 bool hasRightTrain(int*, int, int);
