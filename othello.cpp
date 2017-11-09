@@ -1,41 +1,46 @@
 /******************************************************************************
- * Othello Game with Alpha-Beta Pruning
- *
- * Developed by: Mitchell Openlander
- * For: CS 4200 - Artificial Intelligence Methods
- *      Doctor J.K. Jake Lee
- *
- * //TODO general method used and whatnot
+ *                    Othello Game with Alpha-Beta Pruning                    *
+ *                                                                            *
+ * Developed by: Mitchell Openlander                                          *
+ * For: CS 4200 - Artificial Intelligence Methods                             *
+ *      Doctor J.K. Jake Lee                                                  *
+ *                                                                            *
+ * This is an othello game programed in C++ tha uses Alpha-Beta pruning for   *
+ *  it's evaluation function. The evaluation function relies on an array      *
+ *  of values which represent how good a certain position is. The higer the   *
+ *  number, the better the position.                                          *
+ *                                                                            *
+ * Black pieces are represented by a  1.                                      *
+ * White pieces are represented by a -1.                                      *
+ * Human is Black.                                                            *
+ * Computer is White.                                                         *
+ * Black goes first.                                                          *
+ *                                                                            *
+ * ---------------------------- Map of the Board ---------------------------- *
+ *                                                                            *
+ * Rows go down while columns go across.                                      *
+ *  Or the row position is the x position and                                 *
+ *   the column position is the y position.                                   *
+ *                                                                            *
+ * The following map represents the translation between the 1D array index    *
+ *  and the coordinates (Row, Column) index.                                  *
+ *                                                                            *
+ *    //   0  1  2  3  4  5  6  7  Row Index                                  *
+ *                                                                            *
+ *    0    0  1  2  3  4  5  6  7                                             *
+ *    1    8  9 10 11 12 13 14 15                                             *
+ *    2   16 17 18 19 20 21 22 23                                             *
+ *    3   24 25 26 27 28 29 30 31                                             *
+ *    4   32 33 34 35 36 37 38 39                                             *
+ *    5   40 41 42 43 44 45 46 47                                             *
+ *    6   48 49 50 51 52 53 54 55                                             *
+ *    7   56 57 58 59 60 61 62 63                                             *
+ *                                                                            *
+ * Calculations:                                                              *
+ *  Row Index = pos % 8                                                       *
+ *  Column Index = pos / 8                                                    *
+ *  pos = row + (8 * column)                                                  *
  ******************************************************************************/
-
-/*
-
-//   0  1  2  3  4  5  6  7  Row Index
-
-0    0  1  2  3  4  5  6  7
-1    8  9 10 11 12 13 14 15
-2   16 17 18 19 20 21 22 23
-3   24 25 26 27 28 29 30 31
-4   32 33 34 35 36 37 38 39
-5   40 41 42 43 44 45 46 47
-6   48 49 50 51 52 53 54 55
-7   56 57 58 59 60 61 62 63
-
-Row Index = pos % 8
-Column Index = pos / 8
-pos = row + (8 * column)
-
-Rows are vertical
-Columns are horizontal
-
-*/
-
-
-//Black = 1
-//White = -1
-//Player is Black
-//Computer is White
-//Black goes first
 
 #include <iostream>
 #include <string>
@@ -69,35 +74,35 @@ bool hasBottomLeftTrain(int*, int, int);
 bool hasBottomRightTrain(int*, int, int);
 
 //Global Variables
-const int ROWS = 8;
-const int COLUMNS = 8;
-const int BLACK = 1; //human player
-const int WHITE = -1; //computer player
+const int ROWS    =  8;
+const int COLUMNS =  8;
+const int BLACK   =  1; //human player
+const int WHITE   = -1; //computer player
+const string computerName = "Othello 9001";
+string playerName;
 
 const int heuristicValues[ROWS * COLUMNS] = {
-    1000, 50, 100, 100, 100, 100, 50, 1000,
-    50, -20, -10, -10, -10, -10, -20, 50,
-    100, -10, 1, 1, 1, 1, -10, 100,
-    100, -10, 1, 1, 1, 1, -10, 100,
-    100, -10, 1, 1, 1, 1, -10, 100,
-    100, -10, 1, 1, 1, 1, -10, 100,
-    50, -20, -10, -10, -10, -10, -20, 50,
-    1000, 50, 100, 100, 100, 100, 50, 1000
+    1000, 50, 100, 100, 100, 100,  50, 1000,
+    50,  -20, -10, -10, -10, -10, -20,   50,
+    100, -10,   1,   1,   1,   1, -10,  100,
+    100, -10,   1,   1,   1,   1, -10,  100,
+    100, -10,   1,   1,   1,   1, -10,  100,
+    100, -10,   1,   1,   1,   1, -10,  100,
+    50,  -20, -10, -10, -10, -10, -20,   50,
+    1000, 50, 100, 100, 100, 100,  50, 1000
 };
 
 int initialValues[ROWS * COLUMNS] = {
-    0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, -1, 1, 0, 0, 0,
-    0, 0, 0, 1, -1, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0
+    0,  0,  0,  0,  0,  0,  0,  0,
+    0,  0,  0,  0,  0,  0,  0,  0,
+    0,  0,  0,  0,  0,  0,  0,  0,
+    0,  0,  0, -1,  1,  0,  0,  0,
+    0,  0,  0,  1, -1,  0,  0,  0,
+    0,  0,  0,  0,  0,  0,  0,  0,
+    0,  0,  0,  0,  0,  0,  0,  0,
+    0,  0,  0,  0,  0,  0,  0,  0
 };
 
-string playerName;
-const string computerName = "Othello 9001";
 
 int main() {
     //Welcome the player and get their name for a more personalized experience
@@ -132,27 +137,18 @@ int main() {
     return 0;
 }
 
+/**
+    Handles the main gameplay, cycling through the players until no more moves are left.
+    Also outputs the final score.
+
+    @param board the starting board in which the game is played on
+*/
 void playGame(int* board) {
-    //while loop - checks if any moves are left
-    // if human's turn and has a move left
-    //  cout color's turn
-    //  display stats
-    //  get move
-    //  check if move is legal
-    //   apply move if it is. get new move if it isn't
-    // if computers turn
-    //  cout color's turn
-    //  calculate minMax
-    //  find best move
-    //  apply that move
-    // switch players
-    //display final score and winner
+    int currentPlayer = BLACK; //Black goes first
 
-    int currentPlayer = BLACK;
-
-    while (hasMovesLeft(board, currentPlayer) || hasMovesLeft(board, opponent(currentPlayer))) { //Loop while there are still moves left
+    while (hasMovesLeft(board, currentPlayer) || hasMovesLeft(board, opponent(currentPlayer))) { //Loop until there are no moves left
         if (currentPlayer == BLACK) { //Human is current player
-            cout << "----------" << playerName << "'s turn" << "----------" << endl << endl;
+            cout << "---------- " << playerName << "'s turn" << " ----------" << endl << endl;
 
             if (hasMovesLeft(board, currentPlayer)) { //Human has moves left
                 displayStats(board);
@@ -163,18 +159,18 @@ void playGame(int* board) {
                 int columnIndex = 0;
 
                 cout << "X Index: ";
-                cin >> rowIndex;
+                cin  >> rowIndex;
                 cout << "Y Index: ";
-                cin >> columnIndex;
+                cin  >> columnIndex;
 
                 while (!isValidMove(board, currentPlayer, rowIndex, columnIndex)) { //Make sure a valid move is retrieved from the player
                     cout << "Sorry, that move is not valid." << endl;
                     cout << "Please try again." << endl << endl;
 
                     cout << "X Index: ";
-                    cin >> rowIndex;
+                    cin  >> rowIndex;
                     cout << "Y Index: ";
-                    cin >> columnIndex;
+                    cin  >> columnIndex;
                 }
 
                 placeTile(board, currentPlayer, rowIndex, columnIndex);
@@ -187,7 +183,7 @@ void playGame(int* board) {
         }
 
         if (currentPlayer == WHITE) { //Computer is current player
-            cout << "----------" << computerName << "'s turn" << "----------" << endl << endl;
+            cout << "---------- " << computerName << "'s turn" << " ----------" << endl << endl;
 
             if (hasMovesLeft(board, currentPlayer)) { //Computer has moves left
                 displayStats(board);
@@ -207,25 +203,33 @@ void playGame(int* board) {
         currentPlayer = opponent(currentPlayer);
     }
 
+    //At this point neither player will have any more moves left.
+    //Figure out the final score and declare a winner.
     int humanScore = score(board, BLACK);
     int computerScore = score(board, WHITE);
 
     cout << "No more moves left." << endl << endl;
-    cout << "---Final Score---" << endl;
-    cout << playerName << ":  " << humanScore << endl;
+    cout << "---Final Score---"   << endl;
+    cout << playerName   << ":  " << humanScore    << endl;
     cout << computerName << ":  " << computerScore << endl << endl;
 
     if (humanScore > computerScore) { //Human wins
-        cout << playerName << " wins!" << endl;
+        cout << playerName  << " wins!" << endl;
         cout << "Good job!" << endl;
     } else if (computerScore > humanScore) { //Computer wins
         cout << computerName << " wins." << endl;
-        cout << "Better luck next time." << endl;
+        cout << "Better luck next time." << endl; //Offer words of encouragement so the human dosen't feel crushed
     } else { //Tie
         cout << "Tie game." << endl;
     }
 }
 
+/**
+    Returns the value player's opponent.
+
+    @param player the player value to find the opponent of
+    @returns the integer value of the opponent.
+*/
 int opponent(int player) {
     int opnt = WHITE;
 
@@ -236,9 +240,19 @@ int opponent(int player) {
     return opnt;
 }
 
+/**
+    Checks if the player can make a move on the board.
+
+    @param board the board to check if the player has moves left on
+    @param player the player who's being checked
+    @return true if the player has a move left, false otherwise
+*/
 bool hasMovesLeft(int* board, int player) {
     bool hasMoveLeft = false;
 
+    //Iterate through each position until a valid move is found
+    // This only has to loop until a vaild move is found because
+    //  once a move is found then the player has a move left.
     for (int i = 0; i < ROWS * COLUMNS && !hasMoveLeft; i++) {
         hasMoveLeft = isValidMove(board, player, i);
     }
@@ -246,44 +260,74 @@ bool hasMovesLeft(int* board, int player) {
     return hasMoveLeft;
 }
 
+/**
+    Display the stats of the board including:
+     The current score of both players and
+     The current board configuration.
+
+    @param board the board to display the stats of
+*/
 void displayStats(int* board) {
     cout << "Score" << endl;
-    cout << " - " << playerName << ":  " << score(board, BLACK) << endl;
-    cout << " - " << computerName << ":  " << score(board, WHITE) << endl;
+    cout << " - "   << playerName   << ":  " << score(board, BLACK) << endl; //List the player first to make them feel special despite they're about to be crushed
+    cout << " - "   << computerName << ":  " << score(board, WHITE) << endl;
 
     cout << endl << endl;
 
-    cout << "    0  1  2  3  4  5  6  7" << endl;
+    cout << "    0  1  2  3  4  5  6  7" << endl; //Print row indexes
     int columnNum = 0;
 
     for (int i = 0; i < ROWS * COLUMNS; i++) {
-        if (i % ROWS == 0) {
-            cout << endl;
-            cout << columnNum << "   ";
+        if (i % ROWS == 0) { //If dropping down to a new column
+            cout << endl;    //End the current column
+            cout << columnNum << "   ";  //Print the column index
 
             columnNum++;
         }
 
         char output = '-';
 
-        if (board[i] == -1) {
-            output = 'W';
-        } else if (board[i] == 1) {
-            output = 'B';
+        if (board[i] == -1) { //Board is occupied by the computer
+            output = 'X';
+        } else if (board[i] == 1) { //Board is occupied by the human
+            output = 'O';
         }
 
         cout << output << "  ";
     }
 }
 
+/**
+    Overloaded function for isValidMove(int*, int, int)
+     that accepts row and column indexes rather than the array index.
+
+    @param board configuration of the board to check for the vaild move
+    @param player which player the move is being searched for
+    @param row row index of the cell which is being checked if it is valid
+    @param column column index of the cell which is being checked if it is valid
+    @returns true if the player can place a piece in (row, column) of the board
+*/
 bool isValidMove(int* board, int player, int row, int column) {
     return isValidMove(board, player, row + (ROWS * column));
 }
 
+/**
+    Checks if the player can place a piece at position pos on the board.
+
+    @param board configuration of the board to check for the vaild move
+    @param player which player the move is being searched for
+    @param pos array index of the cell which is being checked if it is valid
+    @returns true if the player can place a piece in (row, column) of the board
+*/
 bool isValidMove(int* board, int player, int pos) {
     bool valid = false;
 
-    if (board[pos] == 0) {
+    if (board[pos] == 0) { //Cell is empty
+        //Check the adjacent cells for the opponent's piece
+        // which may be followed by more of the opponent's pieces
+        // but ends with the player's piece.
+        //Once it is determined that the move is valid then no
+        // further checking is needed.
         valid = valid || hasTopTrain(board, player, pos);
         valid = valid || hasLeftTrain(board, player, pos);
         valid = valid || hasRightTrain(board, player, pos);
@@ -297,15 +341,39 @@ bool isValidMove(int* board, int player, int pos) {
     return valid;
 }
 
+/**
+    Overloaded function for placeTile(int*, int, int)
+     that accepts row and column indexes rather than the array index.
+
+    @param board in which to place the piece
+    @param player player placing the piece
+    @param row row index of the cell in which the piece is being placed
+    @param column column index of the cell in which the piece is being placed
+    @returns true if the piece was placed successfully
+*/
 bool placeTile(int* board, int player, int row, int column) {
     return placeTile(board, player, row + (ROWS * column));
 }
 
+/**
+    Places the players piece in position pos on the board.
+
+    @param board in which to place the piece
+    @param player player placing the piece
+    @param pos array index of the cell in which the piece is being placed
+    @returns true if the piece was placed successfully
+*/
 bool placeTile(int* board, int player, int pos) {
     bool placed = false;
 
-    if (board[pos] == 0) {
-        board[pos] = player;
+    if (isValidMove(board, player, pos)) { //The move is valid
+        board[pos] = player; //Place the player's piece
+
+        /**
+            These blocks check the adjacent cells for an oppoent's train
+             caboosed by player. If a train is found then all of the
+             opponent's pieces in that train become the player's pieces.
+        */
 
         //Up Cell
         if (hasTopTrain(board, player, pos)) {
@@ -402,29 +470,25 @@ bool placeTile(int* board, int player, int pos) {
     return placed;
 }
 
+/**
+    Finds the best move which currentPlayer can make on the board.
+    This is the initial call of the MinMax algorithm.
+
+    @param board configuration of the board to search for the best move
+    @param currentPlayer player making the move
+    @return array index of the position which will give the currentPlayer the best outcome
+*/
 int findBestMove(int* board, int currentPlayer) {
-    //Iterate through moves to find the vaild moves
-    //set max score and best move
-    //On each valid move, make the move -- copy to new board
-    // Figure out the next to move (after the computer's move)
-    // If player, new score = min choice score
-    // If computer, new score = max choice
-    // if new score > max score
-    //  max score = new score
-    //  save move as the best move
-    // release the temp board
-    //return best move
+    int maxScore = INT_MIN; //negative infinity
+    int bestMove = 0;       //This is the position to place the tile for the best move
+    const int recursionLimit = 6; //6 might be overkill but performance usually doesn't suffer espcially with pruning turned on
+    int alpha = INT_MIN; //negative infinity
+    int beta  = INT_MAX; //positive infinity
 
-    int maxScore = INT_MIN;
-    int bestMove = 0; //This is the position to place the tile for the best move
-    const int recursionLimit = 6;
-    int alpha = INT_MIN;
-    int beta = INT_MAX;
-
-    for (int i = 0; i < ROWS * COLUMNS; i++) {
-        if (isValidMove(board, currentPlayer, i)) {
-            int* newBoard = copyBoard(board);
-            placeTile(newBoard, currentPlayer, i);
+    for (int i = 0; i < ROWS * COLUMNS; i++) { //Iterate through all the moves on the board
+        if (isValidMove(board, currentPlayer, i)) { //Check if the currentPlayer can place a tile there
+            int* newBoard = copyBoard(board); //Copy the board since we're using pointers and stuff. Basically don't mess up the real board.
+            placeTile(newBoard, currentPlayer, i); //Go ahead and make the move
             int newScore = 0;
 
             if (hasMovesLeft(newBoard, opponent(currentPlayer))) { //Opponent can move next
@@ -432,9 +496,15 @@ int findBestMove(int* board, int currentPlayer) {
             } else if (hasMovesLeft(newBoard, currentPlayer)) { //Computer can move next
                 newScore = maxChoice(currentPlayer, newBoard, recursionLimit, alpha, beta);
             } else { //No one can move next, therefore no further analysis can be made
+                //Look at the difference in the final score rather than the heuristic
+                // since it will be the final score that matters and not the best
+                // place to place a tile.
                 newScore = differenceEvaluation(board, currentPlayer);
             }
 
+            //Check if placing a tile at this new position yeilds a greater
+            // score than the max score. If it does then the new score
+            // becomes the max score and its move is stored.
             if (newScore > maxScore) {
                 maxScore = newScore;
                 bestMove = i;
@@ -445,55 +515,54 @@ int findBestMove(int* board, int currentPlayer) {
     return bestMove;
 }
 
+/**
+    Finds the maximum score the player can achive on the board.
+
+    @param player player to find the maximum score for
+    @param board configuration of the board to find the max score the player can achieve on
+    @param depth current number of recursion calls left before relying on the evaluation function
+    @param alpha current alpha value for the alpha-beta pruning
+    @param beta current beta value for the alpha-beta pruning
+    @returns the max score that player can achive on the board
+*/
 int maxChoice(int player, int* board, int depth, int alpha, int beta) {
-    //Iterate through moves to find the valid moves
-    //if depth == 0
-    // return the eval function
-    //max = -inf
-    //new score = 0
-    //For each valid move
-    // do the move -- make a new copy of the board
-    // figure out the next to move (after the valid move is made)
-    // if no valid moves are left
-    //  new score = the difference in score between player and opponent
-    //  new score = win or loss
-    // if next to play is the current player
-    //  new score = max choice
-    // if next to play is the opponent
-    //  new score = min choice
-    // if new score > max
-    //  max = new score
-    // if max >= beta
-    //  break and return max
-    // alpha = Max(alpha, max)
-    // release the temp board
-    //return max
+    int max = INT_MIN;   //negative infinity
+    bool pruned = false; //flag for stopping the loop in the case of pruning. Used to avoid multiple returns
 
-    int max = INT_MIN;
-    bool pruned = false;
-
-    if (depth <= 0) {
+    if (depth <= 0) { //Maximum number of recursions were met
+        //Return the evaluation function
         max = heuristicEvaluation(board, player);
     } else {
         int newScore = 0;
 
-        for (int i = 0; i < ROWS * COLUMNS && !pruned; i++) {
-            if (isValidMove(board, player, i)) {
-                int* newBoard = copyBoard(board);
-                placeTile(newBoard, player, i);
+        for (int i = 0; i < ROWS * COLUMNS && !pruned; i++) { //Iterate through all the moves on the board
+            if (isValidMove(board, player, i)) {  //Check if the move is valid for player
+                int* newBoard = copyBoard(board); //Copy the board since we're using pointers and stuff. Basically don't mess up the real board.
+                placeTile(newBoard, player, i);  //Go ahead and make the move
 
                 if (hasMovesLeft(newBoard, opponent(player))) { //Opponent can move next
                     newScore = minChoice(player, newBoard, depth - 1, alpha, beta);
                 } else if (hasMovesLeft(newBoard, player)) { //Player can move next
                     newScore = maxChoice(player, newBoard, depth - 1, alpha, beta);
                 } else { //No one can move next, therefore no further analysis can be made
+                    //Look at the difference in the final score rather than the heuristic
+                    // since it will be the final score that matters and not the best
+                    // place to place a tile.
                     newScore = differenceEvaluation(board, player);
                 }
 
+                //Check if placing a tile at this new position yeilds a greater
+                // score than the max score. If it does then the new score
+                // becomes the max score.
                 if (newScore > max) {
                     max = newScore;
                 }
 
+                //This is the pruning stage.
+                //If the new score is greater than the already determined minimum
+                // then nothing matters and this branch of the search can stop.
+                //Else if the new score is greater than the maximum,
+                // declare it the maximum to be used on further minMax alpha-beta pruning steps
                 if (newScore >= beta) {
                     pruned = true;
                 } else if (newScore > alpha) {
@@ -507,55 +576,55 @@ int maxChoice(int player, int* board, int depth, int alpha, int beta) {
     return max;
 }
 
+/**
+    Finds the minimum score the player can achive on the board.
+    This observes the play the opponent would make.
+
+    @param player player to find the minimum score for
+    @param board configuration of the board to find the min score the player can achieve on
+    @param depth current number of recursion calls left before relying on the evaluation function
+    @param alpha current alpha value for the alpha-beta pruning
+    @param beta current beta value for the alpha-beta pruning
+    @returns the min score that player can achive on the board
+*/
 int minChoice(int player, int* board, int depth, int alpha, int beta) {
-    //Iterate through moves to find the valid moves
-    //if depth == 0
-    // return the eval function
-    //min = infinity
-    //new score = 0
-    //For each valid move the opponent can make
-    // do the move -- make a new copy of the board
-    // figure out the next to move (after the valid move is made)
-    // if no valid moves are left
-    //  new score = the difference in score between player and opponent
-    //  new score = win or loss
-    // if next to play is the current player
-    //  new score = max choice
-    // if next to play is the opponent
-    //  new score = min choice
-    // if new score < min
-    //  min = new score
-    // if min <= alpha
-    //  break and return min
-    // beta = Min(beta, min)
-    // release the temp board
-    //return min
+    int min = INT_MAX;   //positive infinity
+    bool pruned = false; //flag for stopping the loop in the case of pruning. Used to avoid multiple returns
 
-    int min = INT_MAX;
-    bool pruned = false;
-
-    if (depth <= 0) {
+    if (depth <= 0) { //Maximum number of recursions were met
+        //Return the evaluation function
         min = heuristicEvaluation(board, player);
     } else {
         int newScore = 0;
 
-        for (int i = 0; i < ROWS * COLUMNS && !pruned; i++) {
-            if (isValidMove(board, opponent(player), i)) {
-                int* newBoard = copyBoard(board);
-                placeTile(newBoard, opponent(player), i);
+        for (int i = 0; i < ROWS * COLUMNS && !pruned; i++) { //Iterate through all the moves on the board
+            if (isValidMove(board, opponent(player), i)) { //Check if the move is valid for the player's opponent
+                int* newBoard = copyBoard(board);          //Copy the board since we're using pointers and stuff. Basically don't mess up the real board.
+                placeTile(newBoard, opponent(player), i);  //Go ahead and make the opponent's move
 
-                if (hasMovesLeft(newBoard, player)) { //Player can move next
+                if (hasMovesLeft(newBoard, player)) { //Since the opponent just moved, check if player can move next
                     newScore = maxChoice(player, newBoard, depth - 1, alpha, beta);
                 } else if (hasMovesLeft(newBoard, opponent(player))) { //Opponent can move next
                     newScore = minChoice(player, newBoard, depth - 1, alpha, beta);
                 } else { //No one can move next, therefore no further analysis can be made
+                    //Look at the difference in the final score rather than the heuristic
+                    // since it will be the final score that matters and not the best
+                    // place to place a tile.
                     newScore = differenceEvaluation(board, player);
                 }
 
+                //Check if placing a tile at this new position yeilds a lesser
+                // score than the min score. If it does then the new score
+                // becomes the min score.
                 if (newScore < min) {
                     min = newScore;
                 }
 
+                //This is the pruning stage.
+                //If the new score is less than the already determined maximum
+                // then nothing matters and this branch of the search can stop.
+                //Else if the new score is less than the minimum,
+                // declare it the minimum to be used on further minMax alpha-beta pruning steps
                 if (newScore <= alpha) {
                     pruned = true;
                 } else if (newScore < beta) {
@@ -569,26 +638,50 @@ int minChoice(int player, int* board, int depth, int alpha, int beta) {
     return min;
 }
 
+/**
+    Calculates the score of the player using the heuristicValues array.
+
+    @param board board to calculate the score on
+    @param player player's score to be calculated
+    @return the heuristic score of the player on the board
+*/
 int heuristicEvaluation(int* board, int player) {
     int playerCount = 0;
     int opponentCount = 0;
     int opnt = opponent(player);
 
-    for (int i = 1; i < ROWS * COLUMNS; i++) {
-        if (board[i] == player) {
-            playerCount += heuristicValues[i];
-        } else if (board[i] == opnt) {
-            opponentCount += heuristicValues[i];
+    for (int i = 1; i < ROWS * COLUMNS; i++) { //Iterate through each cell in the board
+        if (board[i] == player) { //Player owns the cell
+            playerCount += heuristicValues[i]; //Add that cells heuristic value to the total player score
+        } else if (board[i] == opnt) { //Opponent owns the cell
+            opponentCount += heuristicValues[i]; //Add that cells heuristic value to the total opponent score
         }
     }
 
+    //Return the difference in scores
+    // because the player wants to win by as much as possible
     return (playerCount - opponentCount);
 }
 
+/**
+    Calculates the score difference between the player and their opponent.
+
+    @param board board to calculate the score on
+    @param player player's score to be calculated
+    @return the difference in score on the board between player and opponent
+*/
 int differenceEvaluation(int* board, int player) {
     return (score(board, player) - score(board, opponent(player)));
 }
 
+/**
+    Calculates the score of a player.
+    Score is how many cells the player owns.
+
+    @param board board to calculate the score on
+    @param player player's score to be calculated
+    @return the score of the player on the board.
+*/
 int score(int* board, int player) {
     int score = 0;
 
@@ -601,6 +694,12 @@ int score(int* board, int player) {
     return score;
 }
 
+/**
+    Copies a board.
+
+    @param board board to be copied
+    @return a copy of the board
+*/
 int* copyBoard(int* board) {
     int* temp = new int[ROWS * COLUMNS];
 
