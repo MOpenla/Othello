@@ -906,6 +906,8 @@ bool hasBottomRightTrain(int* board, int player, int pos) {
  */
 
 bool endOfGame;
+bool mouseOverReset;
+int resetPos[] = {560, 50, 100, 50}; //x, y, height, width
 
 void init_setup(int width, int height, const char* windowName) {
     //Glut Init
@@ -922,6 +924,7 @@ void init_setup(int width, int height, const char* windowName) {
     glutTimerFunc(ANI_MSEC, doAnimation, 0);
 
     endOfGame = false;
+    mouseOverReset = false;
 }
 
 void reshape_handler(int width, int height) {
@@ -937,7 +940,6 @@ void onPaint(void) {
     } else {
         drawBoard();
     }
-
 
     glFlush();
     glutSwapBuffers(); //double buffering
@@ -1081,6 +1083,34 @@ void drawBoard() {
     output(WINDOW_X - 50, WINDOW_Y - 125, 2, to_string(score(currentBoard, WHITE)).c_str());
     //TODO print current player at the bottom of the score pane
 
+    //Draw the reset button
+    if (mouseOverReset) {
+        glColor3f(0.0, 0.0, 0.0); //black
+        glBegin(GL_POLYGON);
+            glVertex2i(resetPos[0], resetPos[1]);
+            glVertex2i(resetPos[0] + resetPos[2], resetPos[1]);
+            glVertex2i(resetPos[0] + resetPos[2], resetPos[1] + resetPos[3]);
+            glVertex2i(resetPos[0], resetPos[1] + resetPos[3]);
+        glEnd();
+    } else {
+        glColor3f(1.0, 1.0, 1.0); //white
+        glBegin(GL_LINES);
+            glVertex2i(resetPos[0], resetPos[1]);
+            glVertex2i(resetPos[0] + resetPos[2], resetPos[1]);
+
+            glVertex2i(resetPos[0] + resetPos[2], resetPos[1]);
+            glVertex2i(resetPos[0] + resetPos[2], resetPos[1] + resetPos[3]);
+
+            glVertex2i(resetPos[0] + resetPos[2], resetPos[1] + resetPos[3]);
+            glVertex2i(resetPos[0], resetPos[1] + resetPos[3]);
+
+            glVertex2i(resetPos[0], resetPos[1] + resetPos[3]);
+            glVertex2i(resetPos[0], resetPos[1]);
+        glEnd();
+    }
+    glColor3f(1.0, 1.0, 1.0); //white
+    output(resetPos[0] + 20, resetPos[1] + 20, 2, "Reset");
+
     //Draw the Gridlines
     int gameSection_X = WINDOW_X - SCORE_AREA_X;
     int divisionX = gameSection_X / ROWS;
@@ -1201,6 +1231,8 @@ void onMouseMove(int x, int y) {
         mousePos = -1;
     }
 
+    mouseOverReset = x >= resetPos[0] && x <= resetPos[0] + resetPos[2] && y <= WINDOW_Y - resetPos[1] && y >= WINDOW_Y - (resetPos[1] + resetPos[3]);
+
     glutPostRedisplay();
 }
 
@@ -1235,32 +1267,36 @@ void finalScoreMouseButton(int button, int state, int x, int y) {
 
 void boardMouseButton(int button, int state, int x, int y) {
     if (button == GLUT_LEFT_BUTTON && state == GLUT_UP) {
-        int gameSection_X = WINDOW_X - SCORE_AREA_X;
-        int divisionX = gameSection_X / ROWS;
-        int divisionY = WINDOW_Y / COLUMNS;
+        if (mouseOverReset) {
+            currentBoard = copyBoard(initialValues);
+        } else {
+            int gameSection_X = WINDOW_X - SCORE_AREA_X;
+            int divisionX = gameSection_X / ROWS;
+            int divisionY = WINDOW_Y / COLUMNS;
 
-        int row = x / divisionX;
-        int column = y / divisionY;
-        int pos = row + (ROWS * column);
+            int row = x / divisionX;
+            int column = y / divisionY;
+            int pos = row + (ROWS * column);
 
-        if (isValidMove(currentBoard, BLACK, pos)) {
-            placeTile(currentBoard, BLACK, pos);
-            glutPostRedisplay();
-
-            if (hasMovesLeft(currentBoard, WHITE)) {
-                int bestMove = findBestMove(currentBoard, WHITE);
-                placeTile(currentBoard, WHITE, bestMove);
+            if (isValidMove(currentBoard, BLACK, pos)) {
+                placeTile(currentBoard, BLACK, pos);
                 glutPostRedisplay();
 
-                while (!hasMovesLeft(currentBoard, BLACK) && hasMovesLeft(currentBoard, WHITE)) {
-                    bestMove = findBestMove(currentBoard, WHITE);
+                if (hasMovesLeft(currentBoard, WHITE)) {
+                    int bestMove = findBestMove(currentBoard, WHITE);
                     placeTile(currentBoard, WHITE, bestMove);
                     glutPostRedisplay();
-                }
-            }
 
-            if (!hasMovesLeft(currentBoard, BLACK) && !hasMovesLeft(currentBoard, WHITE)) { //Neither player has moves left. game over
-                endOfGame = true;
+                    while (!hasMovesLeft(currentBoard, BLACK) && hasMovesLeft(currentBoard, WHITE)) {
+                        bestMove = findBestMove(currentBoard, WHITE);
+                        placeTile(currentBoard, WHITE, bestMove);
+                        glutPostRedisplay();
+                    }
+                }
+
+                if (!hasMovesLeft(currentBoard, BLACK) && !hasMovesLeft(currentBoard, WHITE)) { //Neither player has moves left. game over
+                    endOfGame = true;
+                }
             }
         }
     }
