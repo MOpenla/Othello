@@ -134,7 +134,11 @@ const int SCORE_AREA_X = 200; //This is from the right side of the display
 const char* WINDOW_NAME = "Othello";
 const int ANI_MSEC = 10; //gap between frames
 int* currentBoard;
+int* previousBoard;
 int mousePos;
+bool endOfGame;
+bool mouseOverReset;
+int resetPos[] = {560, 50, 100, 50}; //x, y, height, width
 
 
 int main(int argc, char **argv) {
@@ -905,10 +909,6 @@ bool hasBottomRightTrain(int* board, int player, int pos) {
  * GLUT Functions
  */
 
-bool endOfGame;
-bool mouseOverReset;
-int resetPos[] = {560, 50, 100, 50}; //x, y, height, width
-
 void init_setup(int width, int height, const char* windowName) {
     //Glut Init
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB); //single buffer, rgb colour
@@ -1279,6 +1279,7 @@ void boardMouseButton(int button, int state, int x, int y) {
             int pos = row + (ROWS * column);
 
             if (isValidMove(currentBoard, BLACK, pos)) {
+                previousBoard = copyBoard(currentBoard);
                 placeTile(currentBoard, BLACK, pos);
                 glutPostRedisplay();
 
@@ -1299,6 +1300,9 @@ void boardMouseButton(int button, int state, int x, int y) {
                 }
             }
         }
+    } else if (button == GLUT_RIGHT_BUTTON && state == GLUT_UP) { //Right click
+        currentBoard = previousBoard;
+        glutPostRedisplay();
     }
 }
 
