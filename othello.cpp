@@ -94,6 +94,8 @@ void output(int, int, int, const char*);
 void onKeyPress(unsigned char, int, int);
 void onMouseMove(int, int);
 void onMouseButton(int, int, int, int);
+void finalScoreMouseButton(int, int, int, int);
+void boardMouseButton(int, int, int, int);
 
 //Global Variables
 const int ROWS    =  8;
@@ -919,7 +921,7 @@ void init_setup(int width, int height, const char* windowName) {
     glutMouseFunc(onMouseButton);
     glutTimerFunc(ANI_MSEC, doAnimation, 0);
 
-    endOfGame = true;
+    endOfGame = false;
 }
 
 void reshape_handler(int width, int height) {
@@ -953,7 +955,7 @@ void drawFinalScore() {
 
         winnerString = playerName + " wins!";
         messageString = "Congradulations! I didn't think you had it in you!";
-    } else if (true || computerScore > humanScore) { //Computer Wins
+    } else if (computerScore > humanScore) { //Computer Wins
         glClearColor(1.00, 0.32, 0.32, 1.00); //red to signify loss
         glClear(GL_COLOR_BUFFER_BIT); //clear the colour from the buffer
 
@@ -1071,7 +1073,7 @@ void drawBoard() {
 
     //Draw the Score
     glColor3f(1.0, 1.0, 1.0); //white
-    output(WINDOW_X - SCORE_AREA_X + 60, WINDOW_Y - 25, 1, "Othello");
+    output(WINDOW_X - SCORE_AREA_X + 60, WINDOW_Y - 35, 1, "Othello");
     output(WINDOW_X - SCORE_AREA_X + 10, WINDOW_Y - 75, 2, "Score");
     output(WINDOW_X - SCORE_AREA_X + 20, WINDOW_Y - 100, 2, (playerName + ":").c_str());
     output(WINDOW_X - 50, WINDOW_Y - 100, 2, to_string(score(currentBoard, BLACK)).c_str());
@@ -1203,6 +1205,35 @@ void onMouseMove(int x, int y) {
 }
 
 void onMouseButton(int button, int state, int x, int y) {
+    if (endOfGame) {
+        finalScoreMouseButton(button, state, x, y);
+    } else {
+        boardMouseButton(button, state, x, y);
+    }
+}
+
+void finalScoreMouseButton(int button, int state, int x, int y) {
+    if (button == GLUT_LEFT_BUTTON && state == GLUT_UP) {
+        int gameSection_X = WINDOW_X - SCORE_AREA_X;
+        int divisionX = gameSection_X / ROWS;
+        int divisionY = WINDOW_Y / COLUMNS;
+
+        int row = x / divisionX;
+        int column = y / divisionY;
+        int pos = row + (ROWS * column);
+
+        if (pos == 50 || pos == 51) { //Clicked exit button
+            exit(0);
+        } else if (pos == 54 || pos == 55) { //Clicked rematch button
+            currentBoard = copyBoard(initialValues);
+            endOfGame = false;
+        }
+
+        glutPostRedisplay();
+    }
+}
+
+void boardMouseButton(int button, int state, int x, int y) {
     if (button == GLUT_LEFT_BUTTON && state == GLUT_UP) {
         int gameSection_X = WINDOW_X - SCORE_AREA_X;
         int divisionX = gameSection_X / ROWS;
