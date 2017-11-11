@@ -917,7 +917,6 @@ void init_setup(int width, int height, const char* windowName) {
     glutKeyboardFunc(onKeyPress);
     glutPassiveMotionFunc(onMouseMove);
     glutMouseFunc(onMouseButton);
-    //glutSpecialFunc(onSpecialKeyPress);
     glutTimerFunc(ANI_MSEC, doAnimation, 0);
 
     endOfGame = true;
@@ -949,13 +948,13 @@ void drawFinalScore() {
     string messageString;
 
     if (humanScore > computerScore) { //Human Wins
-        glClearColor(1.00, 0.32, 0.32, 1.00); //red to signify loss
+        glClearColor(0.65, 0.84, 0.65, 1.00); //green to signify win
         glClear(GL_COLOR_BUFFER_BIT); //clear the colour from the buffer
 
         winnerString = playerName + " wins!";
         messageString = "Congradulations! I didn't think you had it in you!";
-    } else if (computerScore > humanScore) { //Computer Wins
-        glClearColor(0.65, 0.84, 0.65, 1.00); //green to signify win
+    } else if (true || computerScore > humanScore) { //Computer Wins
+        glClearColor(1.00, 0.32, 0.32, 1.00); //red to signify loss
         glClear(GL_COLOR_BUFFER_BIT); //clear the colour from the buffer
 
         winnerString = computerName + " wins.";
@@ -964,18 +963,97 @@ void drawFinalScore() {
         glClearColor(0.96, 0.96, 0.96, 1.0); //gray for neutrality
         glClear(GL_COLOR_BUFFER_BIT); //clear the colour from the buffer
 
-        winnerString = "Tie game";
+        winnerString = "                  Tie Game                      ";
         messageString = "              Better luck next time.              ";
     }
 
     //Display output messages
     glColor3f(0.0, 0.0, 0.0); //black
-    output(200, WINDOW_Y - 25, 1, winnerString.c_str());
-    output(200, WINDOW_Y - 50, 2, messageString.c_str());
+    output(225, WINDOW_Y - 50, 1, winnerString.c_str());
+    output(125, WINDOW_Y - 80, 2, messageString.c_str());
 
     //Display final scores
+    glColor3f(0.0, 0.0, 0.0); //black
+    output(125, WINDOW_Y - 150, 1, "Final Score:");
+    output(135, WINDOW_Y - 175, 2, playerName.c_str());
+    output(300, WINDOW_Y - 175, 2, to_string(score(currentBoard, BLACK)).c_str());
+    output(135, WINDOW_Y - 200, 2, computerName.c_str());
+    output(300, WINDOW_Y - 200, 2, to_string(score(currentBoard, WHITE)).c_str());
 
     //Display buttons
+    int gameSection_X = WINDOW_X - SCORE_AREA_X;
+    int divisionX = gameSection_X / ROWS;
+    int divisionY = WINDOW_Y / COLUMNS;
+    int buttonsY  = WINDOW_Y - (7 * divisionY); //Put the buttons in the 7th column
+    int exitButtonX = 2 * divisionX;
+    int rematchButtonX = 6 * divisionX;
+
+    // Exit Button
+    glColor3f(0.0, 0.0, 0.0); //black
+    glBegin(GL_LINES);
+        glVertex2i(exitButtonX, buttonsY);
+        glVertex2i(exitButtonX + divisionX * 2, buttonsY);
+
+        glVertex2i(exitButtonX + divisionX * 2, buttonsY);
+        glVertex2i(exitButtonX + divisionX * 2, buttonsY + divisionY);
+
+        glVertex2i(exitButtonX + divisionX * 2, buttonsY + divisionY);
+        glVertex2i(exitButtonX, buttonsY + divisionY);
+
+        glVertex2i(exitButtonX, buttonsY + divisionY);
+        glVertex2i(exitButtonX, buttonsY);
+    glEnd();
+
+    // Rematch Button
+    glColor3f(0.0, 0.0, 0.0); //black
+    glBegin(GL_LINES);
+        glVertex2i(rematchButtonX, buttonsY);
+        glVertex2i(rematchButtonX + divisionX * 2, buttonsY);
+
+        glVertex2i(rematchButtonX + divisionX * 2, buttonsY);
+        glVertex2i(rematchButtonX + divisionX * 2, buttonsY + divisionY);
+
+        glVertex2i(rematchButtonX + divisionX * 2, buttonsY + divisionY);
+        glVertex2i(rematchButtonX, buttonsY + divisionY);
+
+        glVertex2i(rematchButtonX, buttonsY + divisionY);
+        glVertex2i(rematchButtonX, buttonsY);
+    glEnd();
+
+    // Check if the mouse is over one of the buttons
+    if (mousePos == 50 || mousePos == 51 || mousePos == 54 || mousePos == 55) {
+        int buttonX = exitButtonX;
+
+        if (mousePos == 54 || mousePos == 55) {
+            buttonX = rematchButtonX;
+        }
+
+        glColor3f(0.0, 0.0, 0.0); //black
+        glBegin(GL_POLYGON);
+            glVertex2i(buttonX, buttonsY);
+            glVertex2i(buttonX + divisionX * 2, buttonsY);
+            glVertex2i(buttonX + divisionX * 2, buttonsY + divisionY);
+            glVertex2i(buttonX, buttonsY + divisionY);
+        glEnd();
+
+        //Draw the button labels
+        if (mousePos == 54 || mousePos == 55) {
+            buttonX = rematchButtonX;
+            glColor3f(0.0, 0.0, 0.0); //black
+            output(175, 90, 2, "Exit");
+            glColor3f(1.0, 1.0, 1.0); //white
+            output(405, 90, 2, "Play Again");
+        } else {
+            glColor3f(1.0, 1.0, 1.0); //white
+            output(175, 90, 2, "Exit");
+            glColor3f(0.0, 0.0, 0.0); //black
+            output(405, 90, 2, "Play Again");
+        }
+    } else {
+        glColor3f(0.0, 0.0, 0.0); //black
+        output(175, 90, 2, "Exit");
+        output(405, 90, 2, "Play Again");
+    }
 }
 
 void drawBoard() {
@@ -1149,7 +1227,7 @@ void onMouseButton(int button, int state, int x, int y) {
                     glutPostRedisplay();
                 }
             }
-            
+
             if (!hasMovesLeft(currentBoard, BLACK) && !hasMovesLeft(currentBoard, WHITE)) { //Neither player has moves left. game over
                 endOfGame = true;
             }
