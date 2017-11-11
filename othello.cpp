@@ -544,7 +544,23 @@ int findBestMove(int* board, int currentPlayer) {
                 //Look at the difference in the final score rather than the heuristic
                 // since it will be the final score that matters and not the best
                 // place to place a tile.
-                newScore = differenceEvaluation(board, currentPlayer);
+                int diff = differenceEvaluation(board, currentPlayer);
+
+                if (diff > 0) { //Player wins
+                    //New score is the max minus the diff because
+                    // this is a winning state so we want the algorithm
+                    // to chose this path. Subtract the difference incase
+                    // there is another path that leads to a greater win.
+                    newScore = INT_MAX - diff;
+                } else if (diff < 0) { //Opponent wins
+                    //New score is the min plus the diff because
+                    // this is a losing state so we do not want the algorithm
+                    // to chose this path. Subtract the difference (which will be negative)
+                    // incase there is another path that leads to a greater win.
+                    newScore = INT_MIN - diff;
+                } else { //Tie
+                    newScore = diff;
+                }
             }
 
             //Check if placing a tile at this new position yeilds a greater
@@ -593,7 +609,23 @@ int maxChoice(int player, int* board, int depth, int alpha, int beta) {
                     //Look at the difference in the final score rather than the heuristic
                     // since it will be the final score that matters and not the best
                     // place to place a tile.
-                    newScore = differenceEvaluation(board, player);
+                    int diff = differenceEvaluation(board, player);
+
+                    if (diff > 0) { //Player wins
+                        //New score is the max minus the diff because
+                        // this is a winning state so we want the algorithm
+                        // to chose this path. Subtract the difference incase
+                        // there is another path that leads to a greater win.
+                        newScore = INT_MAX - diff;
+                    } else if (diff < 0) { //Opponent wins
+                        //New score is the min plus the diff because
+                        // this is a losing state so we do not want the algorithm
+                        // to chose this path. Subtract the difference (which will be negative)
+                        // incase there is another path that leads to a greater win.
+                        newScore = INT_MIN - diff;
+                    } else { //Tie
+                        newScore = diff;
+                    }
                 }
 
                 //Check if placing a tile at this new position yeilds a greater
@@ -655,7 +687,23 @@ int minChoice(int player, int* board, int depth, int alpha, int beta) {
                     //Look at the difference in the final score rather than the heuristic
                     // since it will be the final score that matters and not the best
                     // place to place a tile.
-                    newScore = differenceEvaluation(board, player);
+                    int diff = differenceEvaluation(board, player);
+
+                    if (diff > 0) { //Player wins
+                        //New score is the max minus the diff because
+                        // this is a winning state so we want the algorithm
+                        // to chose this path. Subtract the difference incase
+                        // there is another path that leads to a greater win.
+                        newScore = INT_MAX - diff;
+                    } else if (diff < 0) { //Opponent wins
+                        //New score is the min plus the diff because
+                        // this is a losing state so we do not want the algorithm
+                        // to chose this path. Subtract the difference (which will be negative)
+                        // incase there is another path that leads to a greater win.
+                        newScore = INT_MIN - diff;
+                    } else { //Tie
+                        newScore = diff;
+                    }
                 }
 
                 //Check if placing a tile at this new position yeilds a lesser
@@ -710,6 +758,7 @@ int heuristicEvaluation(int* board, int player) {
 
 /**
     Calculates the score difference between the player and their opponent.
+    Positive score means the player wins. Negative score means the opponent wins.
 
     @param board board to calculate the score on
     @param player player's score to be calculated
